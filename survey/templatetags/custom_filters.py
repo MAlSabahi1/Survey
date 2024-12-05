@@ -33,3 +33,14 @@ def dict_key(value, key):
 @register.filter
 def encode_id_filter(value):
     return encode_id(value)
+
+
+
+@register.filter
+def dictitems(value):
+    """
+    فلتر مخصص لإرجاع العناصر داخل القاموس (key-value pairs).
+    """
+    if isinstance(value, dict):
+        return value.items()
+    return None

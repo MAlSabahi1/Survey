@@ -1,4 +1,5 @@
 {% extends "base.html" %} 
+{% load custom_filters %}
 {% block title %}الكيانات والقطاعات{% endblock %}
 {% block content %}
 <div class="container" dir="rtl">
@@ -8,56 +9,53 @@
   >
     <h3 class="mb-0"><i class="fas fa-users"></i> الكيانات والقطاعات</h3>
   </div>
-
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
-      <!-- Loop through parent entities -->
-      {% for parent in parent_entities %}
-      <div class="col">
+    {% for parent in parent_entities %}
+    <div class="col">
         <div class="card h-100 rounded-4 border-0 bg-light" data-aos="fade-up" data-aos-duration="1000">
-          <!-- Card Header -->
-          <div class="card-header text-white rounded-top d-flex justify-content-between" style="background: #5e84ab; padding: 20px;">
-            <!-- Display parent entity name -->
-            <h4 class="card-title mb-0 text-truncate" style="font-size: 1.3rem">
-              {{ parent.name }}
-            </h4>
-            <button type="button" class="btn btn-primary btn-md" data-bs-toggle="modal" data-bs-target="#addSectorModal" data-entity-id="{{ parent.id }}">
-              إضافة قطاع
-            </button>
-          </div>
-    
-          <!-- Card Body -->
-          <div class="card-body" style="background-color: #f8f9fa; padding: 20px;">
-            <!-- Display children with permissions -->
-            <ul class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
-              {% for child in child_permissions %}
-              {% if child.parent.id == parent.id %}
-              <li class="list-group-item text-end border-0 d-flex justify-content-between align-items-center"
-                  style="background-color: #f7f7f7; color: #495057; padding: 12px 20px;">
-                <!-- Link to child entity -->
-                <a href="{% url 'categories' child.encoded_id %}" class="fw-bold text-primary text-truncate">
-                  {{ child.name }}
-                </a>
-                <i class="fa-regular fa-building fa-lg"></i>
-              </li>
-              {% endif %}
-              {% endfor %}
-            </ul>
-    
-            <!-- If no children are found -->
-            {% if not child_permissions|yesno:"yes" %}
-            <p class="text-muted text-end" style="font-size: 0.9rem;">
-              لا توجد صلاحيات على الأبناء.
-            </p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+            
+            <!-- Header -->
+            <div class="card-header text-white rounded-top d-flex justify-content-between" style="background: #5e84ab; padding: 20px;">
+                <h4 class="card-title mb-0 text-truncate" style="font-size: 1.3rem">
+                    {{ parent.name }}
+                </h4>
+                
+                <!-- زر الإضافة يظهر فقط إذا كان للمستخدم صلاحية على الأب -->
+                {% if parent in permissions %}
+                <button type="button" class="btn btn-primary btn-md" data-bs-toggle="modal" data-bs-target="#addSectorModal" data-entity-id="{{ parent.id }}">
+                    إضافة قطاع
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- Body -->
+            <div class="card-body" style="background-color: #f8f9fa; padding: 20px;">
+                <ul class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
+                    {% for child in child_permissions %}
+                    {% if child.parent.id == parent.id %}
+                    <li class="list-group-item text-end border-0 d-flex justify-content-between align-items-center"
+                        style="background-color: #f7f7f7; color: #495057; padding: 12px 20px;">
+                        <a href="{% url 'categories' child.encoded_id %}" class="fw-bold text-primary text-truncate">
+                            {{ child.name }}
+                        </a>
+                        <i class="fa-regular fa-building fa-lg"></i>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
 
-  
-  </div>
-  
+                {% if not child_permissions|yesno:"yes" %}
+                <p class="text-muted text-end" style="font-size: 0.9rem;">
+                    لا توجد صلاحيات على الأبناء.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
   
 
   <!-- Modal -->

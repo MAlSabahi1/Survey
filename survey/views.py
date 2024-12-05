@@ -942,30 +942,38 @@ def get_sectors(request):
     sectors = Sector.objects.filter(entity_id=entity_id).values('id', 'name')
     return JsonResponse({'sectors': list(sectors)})
 
-
 @login_required
 def home(request):
     user = request.user
 
-    # Get child entities (where parent is not None) with permissions for the user
-    child_permissions = Entitys.objects.filter(parent__isnull=False, user_permissions__user=user)
+    # جميع الكيانات التي يمتلك المستخدم صلاحيات عليها
+    permissions = Entitys.objects.filter(user_permissions__user=user)
 
-    # Get unique parent entities of the child entities
-    parent_entities = Entitys.objects.filter(id__in=child_permissions.values_list('parent_id', flat=True))
+    # الآباء الذين يمتلك المستخدم صلاحية مباشرة عليهم
+    parent_entities = permissions.filter(parent=None)
 
+    # الأطفال الذين يمتلك المستخدم صلاحية عليهم
+    child_permissions = permissions.filter(parent__isnull=False)
 
+    # الآباء الذين لديهم أطفال يمتلك المستخدم صلاحية عليهم
+    parents_with_children_permissions = Entitys.objects.filter(
+        id__in=child_permissions.values_list('parent_id', flat=True)
+    )
 
-    # Add encoded_id for each entity for secure URL encoding
-    for entity in parent_entities:
-        entity.encoded_id = encode_id(entity.id)  # Ensure the encode_id function is working correctly
+    # دمج جميع الآباء في قائمة واحدة (الآباء بصلاحيات مباشرة + الآباء الذين لديهم أطفال بصلاحيات)
+    all_parents = parent_entities.union(parents_with_children_permissions)
 
+    # إضافة encoded_id
+    for entity in permissions:
+        entity.encoded_id = encode_id(entity.id)
 
     for entity in child_permissions:
         entity.encoded_id = encode_id(entity.id)
 
     context = {
-        'parent_entities': parent_entities,  # Parents of children with permissions
-        'child_permissions': child_permissions,  # Child entities with permissions
+        'parent_entities': all_parents,  # جميع الآباء الذين يجب أن تظهر الكروت الخاصة بهم
+        'child_permissions': child_permissions,  # الأطفال مع صلاحيات
+        'permissions': permissions,
     }
 
     return render(request, 'home.html', context)

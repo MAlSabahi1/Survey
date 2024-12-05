@@ -14,7 +14,7 @@
   <form method="post" id="survey-form">
     {% csrf_token %}
     <div class="row g-4">
-      <div class="form-group mb-4">
+      <div class="col-9 form-group mb-4">
         <label for="survey-title" class="form-label" style="font-size: 1.1rem; font-weight: bold; color: #34495e;">اسم الاستبيان</label>
         <input
           type="text"
@@ -24,6 +24,14 @@
           class="form-control p-3 border-1 shadow-sm rounded-3"
           placeholder="أدخل اسم الاستبيان هنا"
         />
+      </div>
+      <div class="col-3 d-flex flex-column justify-content-between text-center mt-5">
+        <button id="print-button" type="button" class="btn btn-secondary px-4 py-2" style="background-color: #2c3e50; border: none; border-radius: 5px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
+          <i class="fa-solid fa-print"></i> طباعة التقرير
+        </button>
+        <button type="submit" class="btn btn-secondary px-4 py-2" style="background-color: #2c3e50; border: none; border-radius: 5px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
+          حفظ التعديلات
+        </button>
       </div>
       {% for question in questions %}
       <div class="col-md-6">
@@ -241,6 +249,11 @@
     width: 1.2em !important;
     height: 1.2em !important;
   }
+  @media print {
+    /* إخفاء أزرار الطباعة والحفظ أثناء الطباعة */
+    #print-button, button[type="submit"] {
+      display: none !important;
+    }
 </style>
 
 <script>
@@ -255,6 +268,11 @@
     setTimeout(function() {
       form.submit(); // Submit the form after toast is displayed
     }, 1500); // Adjust the timeout to match the toast display duration
+  });
+</script>
+<script>
+  document.getElementById('print-button').addEventListener('click', function () {
+    window.print();
   });
 </script>
 
