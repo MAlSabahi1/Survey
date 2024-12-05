@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}اختر استبيان لعرض التقرير{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>اختر استبيان لعرض التقرير</h2>
+    <ul class="list-group mt-3">
+        {% for survey in surveys %}
+            <li class="list-group-item">
+                <a href="{% url 'survey_report' survey.id %}" class="text-decoration-none">{{ survey.title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

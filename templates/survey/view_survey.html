@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}عرض الاستبيان{% endblock %}
+
+{% block content %}
+<div class="container" dir="rtl">
+    <h2 class="text-center mb-4">عرض الاستبيان</h2>
+    <p><strong>التصنيف:</strong> {{ survey.get_category_display }}</p>
+    <p><strong>تاريخ الإنشاء:</strong> {{ survey.created_at }}</p>
+    <h3>الأسئلة والإجابات:</h3>
+    <ul class="list-group">
+        {% for question, answers in questions_with_answers.items %}
+            <li class="list-group-item">
+                <strong>السؤال:</strong> {{ question.text }}
+                <ul>
+                    {% for answer in answers %}
+                        <li><strong>الإجابة:</strong> {{ answer }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="mt-4">
+        <!-- روابط للتحكم -->
+        <a href="{% url 'categories' survey.id %}" class="btn btn-secondary">العودة إلى التصنيفات</a>
+    </div>
+</div>
+{% endblock %}

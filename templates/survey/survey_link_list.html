@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Link Surveys to Entities and Sectors{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Choose Survey to Link</h2>
+    <div class="row">
+        {% for survey in surveys %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ survey.title }}</h5>
+                        <p class="card-text">{{ survey.description }}</p>
+                        <a href="{% url 'link_survey_to_entity_sector' survey_id=survey.id %}" class="btn btn-primary">Link to Entity and Sector</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted text-center">No surveys available for linking.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

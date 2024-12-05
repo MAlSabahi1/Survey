@@ -1,0 +1,472 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-5">
+  <!-- العنوان -->
+  <h2 class="text-center title">إدارة الاستبيانات</h2>
+
+  <!-- شريط البحث وزر الإضافة في نفس السطر -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="input-group search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="ابحث عن استبيان..."
+      />
+      <button class="btn btn-search" id="searchButton">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+
+    <!-- زر الإضافة المعدل لفتح الـ Modal -->
+    <div class="text-end">
+      <button
+        class="btn btn-add-survey"
+        data-bs-toggle="modal"
+        data-bs-target="#createSurveyModal"
+      >
+        <i class="fas fa-plus-circle fa-lg"></i> <span>إضافة استبيان جديد</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- جدول الاستبيانات -->
+  <div class="table-responsive shadow-sm rounded">
+    <table id="surveyTable" class="table table-hover">
+      <thead class="thead-custom">
+        <tr>
+          <th>عنوان الاستبيان</th>
+          <th>الوصف</th>
+          <th>تم إنشاؤه بواسطة</th>
+          <th>الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for survey in surveys %}
+        <tr>
+          <td>{{ survey.title }}</td>
+          <td>{{ survey.description }}</td>
+          <td>{{ survey.created_by }}</td>
+          <td class="text-center">
+            <a
+              href="{% url 'view_survey' survey.id %}"
+              class="btn btn-view"
+              title="عرض"
+            >
+              <i class="fas fa-eye"></i>
+            </a>
+            <a
+              href="{% url 'edit_survey' survey.id %}"
+              class="btn btn-edit"
+              title="تعديل"
+            >
+              <i class="fas fa-edit"></i>
+            </a>
+            <a
+              href="{% url 'delete_survey' survey.id %}"
+              class="btn btn-delete"
+              title="حذف"
+            >
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">لا توجد استبيانات متاحة</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- نافذة الـ Modal لإضافة استبيان جديد -->
+<div class="modal fade" id="createSurveyModal" tabindex="-1" aria-labelledby="createSurveyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-top">
+      <div class="modal-content shadow-sm border-0 rounded-4">
+          <!-- رأس النافذة -->
+          <div class="modal-header bg-primary text-white py-4 rounded-top">
+              <h5 class="modal-title mx-auto fw-bold fs-5" id="createSurveyModalLabel">إضافة استبيان جديد</h5>
+              <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+          </div>
+
+          <!-- محتوى النافذة -->
+          <div class="modal-body p-4 bg-light rounded-bottom">
+              <form id="createSurveyForm" method="POST" action="{% url 'create_survey' %}">
+                  {% csrf_token %}
+
+                  <!-- عنوان الاستبيان -->
+                  <div class="mb-4">
+                      <label for="surveyTitle" class="form-label fw-semibold text-secondary fs-6">عنوان الاستبيان</label>
+                      <input type="text" class="form-control form-control-lg rounded-3 border-light shadow-sm" id="surveyTitle" name="title" required placeholder="أدخل عنوان الاستبيان">
+                  </div>
+
+                  <!-- وصف الاستبيان -->
+                  <div class="mb-4">
+                      <label for="surveyDescription" class="form-label fw-semibold text-secondary fs-6">وصف الاستبيان</label>
+                      <textarea class="form-control form-control-lg rounded-3 border-light shadow-sm" id="surveyDescription" name="description" rows="4" required placeholder="أدخل وصفًا للاستبيان"></textarea>
+                  </div>
+
+                  <!-- أزرار التحكم -->
+                  <div class="modal-footer border-0 d-flex justify-content-end py-2">
+                      <button type="submit" class="btn btn-primary btn-lg px-5 me-3 rounded-1 shadow-sm">
+                          <i class="fas fa-save me-2"></i> حفظ
+                      </button>
+                      <button type="button" class="btn btn-light btn-lg px-5 rounded-1 shadow-sm border" data-bs-dismiss="modal">
+                          <i class="fas fa-times me-2"></i> إغلاق
+                      </button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+<!-- تحميل CSS الخاص بـ Bootstrap 5 -->
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+
+<!-- تحميل مكتبة Font Awesome لإضافة الأيقونات -->
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  rel="stylesheet"
+/>
+<!-- مكتبات JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.9/dist/sweetalert2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // إرسال النموذج عبر AJAX
+    $("#createSurveyForm").on("submit", function (event) {
+      event.preventDefault(); // منع إرسال النموذج بالطريقة التقليدية
+      const form = $(this);
+
+      $.ajax({
+        url: form.attr("action"),
+        method: "POST",
+        data: form.serialize(),
+        success: function (response) {
+          if (response.success) {
+            Swal.fire({
+              title: "تم الحفظ!",
+              text: "تم إضافة الاستبيان بنجاح.",
+              icon: "success",
+              showConfirmButton: false, // إخفاء زر "موافق"
+              timer: 2000, // عرض الرسالة لمدة 2 ثانية
+              timerProgressBar: true, // عرض شريط تقدم
+            }).then(() => {
+              window.location.href = "{% url 'survey_list' %}"; // توجيه المستخدم إلى صفحة إدارة الاستبيانات
+            });
+          } else {
+            Swal.fire({
+              title: "خطأ!",
+              text: "حدث خطأ أثناء إضافة الاستبيان.",
+              icon: "error",
+              showConfirmButton: false, // إخفاء زر "موافق"
+              timer: 2000, // عرض الرسالة لمدة 2 ثانية
+              timerProgressBar: true, // عرض شريط تقدم
+            });
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          Swal.fire({
+            title: "خطأ!",
+            text: "حدث خطأ في الاتصال بالخادم.",
+            icon: "error",
+            showConfirmButton: false, // إخفاء زر "موافق"
+            timer: 2000, // عرض الرسالة لمدة 2 ثانية
+            timerProgressBar: true, // عرض شريط تقدم
+          });
+        },
+      });
+    });
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    var table = $("#surveyTable").DataTable({
+      paging: true,
+      lengthChange: false,
+      pageLength: 10,
+      lengthMenu: [10, 20, 30, 50, -1],
+      info: true,
+      searching: true,
+      ordering: true,
+      autoWidth: true,
+      stateSave: true,
+      responsive: true,
+      language: {
+        search: "ابحث:",
+        lengthMenu: "عرض _MENU_ استبيان لكل صفحة",
+        info: "عرض _START_ إلى _END_ من _TOTAL_ استبيان",
+        infoEmpty: "لا توجد استبيانات متاحة",
+        zeroRecords: "لم يتم العثور على استبيانات مطابقة",
+        paginate: {
+          next: "التالي",
+          previous: "السابق",
+        },
+      },
+      columnDefs: [
+        {
+          targets: 3,
+          orderable: false,
+          className: "text-center",
+        },
+      ],
+    });
+
+    // البحث في الجدول باستخدام شريط البحث المخصص
+    $("#searchInput").on("keyup", function () {
+      table.search($(this).val()).draw();
+    });
+
+    $("#searchButton").on("click", function () {
+      var searchValue = $("#searchInput").val();
+      table.search(searchValue).draw();
+    });
+  });
+
+  function confirmDeletion(event) {
+    event.preventDefault();
+    const url = event.currentTarget.getAttribute("href");
+    Swal.fire({
+      title: "هل أنت متأكد؟",
+      text: "هل تريد حذف هذا الاستبيان؟",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "نعم، احذفه!",
+      cancelButtonText: "لا، إلغاء",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  }
+</script>
+<script>
+  $(document).ready(function () {
+    $("#surveyTable_filter").hide();
+  });
+</script>
+<style>
+  /* إعدادات عامة */
+  body {
+    background-color: #f3f6f9;
+    font-family: "Cairo", sans-serif;
+    color: #333;
+  }
+
+  .container {
+    max-width: 85%;
+    margin: auto;
+  }
+
+  .title {
+    font-size: 2.4rem;
+    color: #2c3e50;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* إعدادات شريط البحث */
+  .search-bar {
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .search-bar input {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-right: none;
+    flex: 1;
+  }
+
+  .search-bar button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .search-bar button:hover {
+    background-color: #2980b9;
+  }
+
+  /* زر إضافة مصمم بشكل احترافي */
+  .btn-add-survey {
+    background-color: #3498db;
+    color: white;
+    padding: 18px 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-add-survey i {
+    margin-right: 10px;
+  }
+
+  .btn-add-survey:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    color:#fff;
+    background:#2980b9;
+  }
+
+  /* تصميم الجدول */
+  .table-responsive {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  #surveyTable {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .thead-custom {
+    background-color: #3498db;
+    color: white;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  #surveyTable th,
+  #surveyTable td {
+    padding: 16px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.95rem;
+  }
+
+  #surveyTable tbody tr {
+    transition: background-color 0.3s ease;
+  }
+
+  #surveyTable tbody tr:hover {
+    background-color: #f4f4f4;
+  }
+
+  /* تصميم الأزرار */
+  .btn-view {
+    background-color: #3498db;
+    color: white;
+    border-radius: 5px;
+  }
+
+  .btn-view:hover {
+    background-color: #2980b9;
+  }
+
+  .btn-edit {
+    background-color: #f39c12;
+    color: white;
+  }
+
+  .btn-edit:hover {
+    background-color: #e67e22;
+  }
+
+  .btn-delete {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background-color: #c0392b;
+  }
+  /* شفافية خلفية الـ Modal */
+  .modal-backdrop.show {
+      opacity: 0.3 !important; /* تقليل شدة الخلفية */
+  }
+  
+  /* إعدادات التصميم */
+  .modal-top {
+      top: 10%;
+  }
+  
+  .modal-content {
+      border-radius: 1rem;
+      box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease-in-out;
+  }
+  
+  .modal.fade.show .modal-content {
+      opacity: 1;
+      transform: scale(1);
+  }
+  
+  /* تصميم رأس الـ Modal */
+  .modal-header {
+      background-color: #007bff;
+      color: #ffffff;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+  }
+  
+  /* محتوى الـ Modal */
+  .modal-body {
+      padding: 2rem;
+      background-color: #f8f9fa;
+      border-bottom-left-radius: 1rem;
+      border-bottom-right-radius: 1rem;
+  }
+  
+  /* تصميم الحقول */
+  .form-control-lg {
+      border-radius: 0.5rem;
+      border: 1px solid #e9ecef;
+      padding: 0.75rem;
+      font-size: 1rem;
+  }
+  
+  .modal .btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 0.6rem 2rem;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.modal .btn-primary:hover {
+    background-color: #0056d2;
+}
+  
+  .modal .btn-outline-light {
+    color: #6c757d;
+    border: 1px solid #6c757d;
+    transition: all 0.3s ease;
+}
+
+.modal .btn-outline-light:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+  
+</style>
+{% endblock content %}

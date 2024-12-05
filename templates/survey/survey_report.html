@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Main Survey Report{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Survey Reports</h2>
+    <p class="text-center">Select a survey to view different reports.</p>
+
+    <!-- Survey selection form -->
+    <form method="get" id="surveyForm" class="mb-3">
+        <label for="surveySelect" class="form-label">Choose a Survey:</label>
+        <select id="surveySelect" class="form-select" onchange="navigateToReport(this.value)">
+            <option value="">-- Select Survey --</option>
+            {% for survey in surveys %}
+                <option value="{{ survey.id }}">{{ survey.title }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div id="reportLinks" class="text-center mt-4 d-none">
+        <h4 class="text-primary">Available Reports</h4>
+        <a href="{% url 'survey_summary_report' 0 %}" class="btn btn-outline-primary m-2" id="summaryReport">Summary</a>
+        <a href="{% url 'question_analysis_report' 0 %}" class="btn btn-outline-primary m-2" id="questionReport">Question Analysis</a>
+        <a href="{% url 'demographic_report' 0 %}" class="btn btn-outline-primary m-2" id="demographicReport">Demographic</a>
+        <a href="{% url 'time_trend_report' 0 %}" class="btn btn-outline-primary m-2" id="timeTrendReport">Trends Over Time</a>
+        <a href="{% url 'completion_analysis' 0 %}" class="btn btn-outline-primary m-2" id="completionReport">Completion</a>
+        <a href="{% url 'satisfaction_report' 0 %}" class="btn btn-outline-primary m-2" id="satisfactionReport">Satisfaction</a>
+        <a href="{% url 'export_survey_data' 0 %}" class="btn btn-outline-success m-2" id="exportReport">Export Data</a>
+    </div>
+</div>
+
+<script>
+// Function to update links when survey is selected
+function navigateToReport(surveyId) {
+    if (surveyId) {
+        document.getElementById('reportLinks').classList.remove('d-none');
+        
+        document.getElementById('summaryReport').href = `/survey/${surveyId}/summary/`;
+        document.getElementById('questionReport').href = `/survey/${surveyId}/question_analysis/`;
+        document.getElementById('demographicReport').href = `/survey/${surveyId}/demographic/`;
+        document.getElementById('timeTrendReport').href = `/survey/${surveyId}/time_trend/`;
+        document.getElementById('completionReport').href = `/survey/${surveyId}/completion/`;
+        document.getElementById('satisfactionReport').href = `/survey/${surveyId}/satisfaction/`;
+        document.getElementById('exportReport').href = `/survey/${surveyId}/export/`;
+    } else {
+        document.getElementById('reportLinks').classList.add('d-none');
+    }
+}
+</script>
+{% endblock %}

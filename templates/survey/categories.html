@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}اختر التصنيف{% endblock %}
+
+{% block content %}
+<div class="container" dir="rtl">
+  <div class="row">
+    <!-- العنوان العام -->
+    <div class="col-lg-12 text-center mb-4">
+      <div class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4">
+        <h3 class="mb-0"><i class="fas fa-poll"></i> الاستبيانات</h3>
+      </div>
+    </div>
+
+    <!-- الأزرار -->
+    <div class="col-lg-12 mb-4 d-flex justify-content-center">
+      <a href="{% url 'show_questions_by_category' category='staff' pk=entity_encoded_id %}" class="btn btn-lg btn-secondary mx-2">
+        <i class="fas fa-users"></i> إضافة الكادر
+    </a>
+    <a href="{% url 'show_questions_by_category' category='infrastructure' pk=entity_encoded_id %}" class="btn btn-lg btn-secondary mx-2">
+        <i class="fas fa-building"></i> إضافة البنية التحتية
+    </a>
+    <a href="{% url 'show_questions_by_category' category='systems' pk=entity_encoded_id %}" class="btn btn-lg btn-secondary mx-2">
+        <i class="fas fa-cogs"></i> إضافة الأنظمة
+    </a>
+   </div>
+
+    <!-- قسم الاستبيانات -->
+    <div class="card">
+      <div class="card-body">
+        <!-- علامات التبويب (Tabs) -->
+        <ul class="nav nav-tabs justify-content-center mb-3" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="staff-tab" data-bs-toggle="tab" href="#staff-surveys" role="tab"><i class="fas fa-users"></i> الكادر</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="infrastructure-tab" data-bs-toggle="tab" href="#infrastructure-surveys" role="tab"><i class="fas fa-building"></i> البنية التحتية</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="systems-tab" data-bs-toggle="tab" href="#systems-surveys" role="tab"><i class="fas fa-cogs"></i> الأنظمة</a>
+          </li>
+        </ul>
+
+        <!-- محتوى علامات التبويب -->
+        <div class="tab-content">
+          <!-- استبيانات الكادر -->
+          <div class="tab-pane fade show active" id="staff-surveys" role="tabpanel">
+            {% if staff_surveys %}
+              <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>اسم الاستبيان</th>
+                    <th>الكيان</th>
+                    <th>التصنيف</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for survey in staff_surveys %}
+                    <tr>
+                      <td>{{ survey.name }}</td>
+                      <td>{{ entity.name }}</td>
+                      <td>{{ survey.get_category_display }}</td>
+                      <td>{{ survey.created_at }}</td>
+                      <td>
+                        <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
+                          <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fas fa-edit"></i> تعديل</a>
+                        <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fas fa-eye"></i> عرض</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p class="text-center text-muted">لا يوجد استبيانات لتصنيف الكادر.</p>
+            {% endif %}
+          </div>
+
+          <!-- استبيانات البنية التحتية -->
+          <div class="tab-pane fade" id="infrastructure-surveys" role="tabpanel">
+            {% if infrastructure_surveys %}
+              <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>اسم الاستبيان</th>
+                    <th>الكيان</th>
+                    <th>التصنيف</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for survey in infrastructure_surveys %}
+                    <tr>
+                      <td>{{ survey.name }}</td>
+                      <td>{{ entity.name }}</td>
+                      <td>{{ survey.get_category_display }}</td>
+                      <td>{{ survey.created_at }}</td>
+                      <td>
+                        <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
+                          <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fas fa-edit"></i> تعديل</a>
+                        <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fas fa-eye"></i> عرض</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p class="text-center text-muted">لا يوجد استبيانات لتصنيف البنية التحتية.</p>
+            {% endif %}
+          </div>
+
+          <!-- استبيانات الأنظمة -->
+          <div class="tab-pane fade" id="systems-surveys" role="tabpanel">
+            {% if systems_surveys %}
+              <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>اسم الاستبيان</th>
+                    <th>الكيان</th>
+                    <th>التصنيف</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for survey in systems_surveys %}
+                    <tr>
+                      <td>{{ survey.name }}</td>
+                      <td>{{ entity.name }}</td>
+                      <td>{{ survey.get_category_display }}</td>
+                      <td>{{ survey.created_at }}</td>
+                      <td>
+                        <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
+                          <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fas fa-edit"></i> تعديل</a>
+                        <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fas fa-eye"></i> عرض</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p class="text-center text-muted">لا يوجد استبيانات لتصنيف الأنظمة.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const deleteButtons = document.querySelectorAll('.delete-survey');
+    
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function (event) {
+        event.preventDefault(); // منع تنفيذ الرابط فورًا
+
+        const deleteUrl = button.href; // حفظ الرابط للحذف بعد التأكيد
+
+        // نافذة التأكيد قبل الحذف
+        Swal.fire({
+          title: 'هل أنت متأكد؟',
+          text: 'لن يمكنك التراجع عن هذا الحذف!',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'نعم، حذف!',
+          cancelButtonText: 'إلغاء',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // نافذة الحذف تم بنجاح
+            Swal.fire({
+              title: 'تم الحذف!',
+              text: 'لقد تم حذف الاستبيان بنجاح.',
+              icon: 'success',
+              showConfirmButton: false, // إخفاء زر التأكيد
+              timer: 1000 // الوقت الذي ستظهر فيه الرسالة قبل الاختفاء (1000 ميلي ثانية = 1 ثانية)
+            }).then(() => {
+              window.location.href = deleteUrl; // تنفيذ الحذف بعد تأكيد المستخدم
+            });
+          } else {
+            Swal.fire(
+              'تم الإلغاء',
+              'لم يتم حذف الاستبيان.',
+              'info'
+            );
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .card {
+    background: none;
+    border-radius: 10px;
+  }
+  .card-header{
+    background-color:#4B6282;
+  }
+
+  .btn {
+    transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  {% comment %} .btn:hover {
+    transform: scale(1.05);
+    background-color: #39404e;
+  } {% endcomment %}
+
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: #e9ecef;
+    cursor: pointer;
+  }
+
+  .table-dark th {
+    background-color: #4b6282;
+    color: white;
+    text-transform: uppercase;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #4b6282;
+    color: white;
+  }
+
+  .nav-tabs .nav-link {
+    border-radius: 5px;
+    padding: 10px 20px;
+  }
+  .form-check .form-check-input {
+     float: right !important 
+     margin-right: -1.5em !important; 
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% endblock %}

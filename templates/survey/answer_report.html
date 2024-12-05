@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}تقرير الإجابات{% endblock %}
+
+{% block content %}
+<div class="container" dir="rtl">
+  <div class="row justify-content-center">
+    <div class="col-lg-12 col-md-9 col-12">
+      <div class="card border-0 rounded-4 animate__animated animate__fadeInUp" data-aos="fade-up">
+        <div class="card-header bg-gradient text-white text-center rounded-top py-4">
+          <h3 class="mb-0"><i class="fas fa-chart-bar"></i> تقرير الإجابات</h3>
+        </div>
+        <div class="card-body p-5">
+          <div class="mb-4">
+            <label for="question-select" class="form-label fw-bold">اختر السؤال</label>
+            <select id="question-select" class="form-control form-control-lg text-end">
+              <option value="" disabled selected>اختر السؤال</option>
+              {% for question in questions %}
+              <option value="{{ question.id }}" data-type="{{ question.question_type }}">
+                {{ question.text }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div id="options-container" class="mt-4">
+            <!-- هنا ستظهر الخيارات -->
+            <p class="text-center text-muted">يرجى اختيار سؤال لعرض الخيارات.</p>
+          </div>
+
+          <div id="entities-container" class="mt-4">
+            <!-- هنا سيظهر جدول الكيانات -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const questionSelect = document.getElementById("question-select");
+  const optionsContainer = document.getElementById("options-container");
+  const entitiesContainer = document.getElementById("entities-container");
+
+  questionSelect.addEventListener("change", function () {
+    const questionId = this.value;
+    const questionType = this.options[this.selectedIndex].getAttribute("data-type");
+
+    optionsContainer.innerHTML = "";
+    entitiesContainer.innerHTML = "";
+
+    if (questionId) {
+      if (questionType === "yes_no") {
+        // عرض الخيارات "نعم" و "لا" للأسئلة من نوع Yes/No
+        optionsContainer.innerHTML = `
+          <div class="text-center mt-4">
+            <button class="btn btn-outline-primary mx-2" data-answer="yes" onclick="fetchEntities(${questionId}, 'yes')">نعم</button>
+            <button class="btn btn-outline-secondary mx-2" data-answer="no" onclick="fetchEntities(${questionId}, 'no')">لا</button>
+          </div>
+        `;
+      } else {
+        // جلب الخيارات من السيرفر للأسئلة من نوع Multiple Choice أو Radio
+        fetch(`/get_choices/${questionId}/`)  // تأكد من إعداد مسار View لجلب الخيارات
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.choices.length > 0) {
+              let buttonsHTML = "<div class='text-center mt-4'>";
+              data.choices.forEach((choice) => {
+                buttonsHTML += `<button class="btn btn-outline-primary mx-2" data-answer="${choice.text}" onclick="fetchEntities(${questionId}, '${choice.text}')">${choice.text}</button>`;
+              });
+              buttonsHTML += "</div>";
+              optionsContainer.innerHTML = buttonsHTML;
+            } else {
+              optionsContainer.innerHTML = "<p class='text-center text-muted'>لا توجد خيارات لهذا السؤال.</p>";
+            }
+          });
+      }
+    }
+  });
+
+  function fetchEntities(questionId, answerValue) {
+    entitiesContainer.innerHTML = "<p class='text-center text-muted'>جارٍ تحميل البيانات...</p>";
+
+    fetch("", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}", // حماية CSRF
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `question_id=${questionId}&answer_value=${answerValue}`,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.entities.length > 0) {
+          let tableHTML = `
+            <table class="table table-bordered text-center">
+              <thead class="table-dark">
+                <tr>
+                  <th>اسم الجهة</th>
+                  <th>اسم الاستبيان</th>
+                  <th>ملاحظات</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.entities.forEach((entity) => {
+            tableHTML += `
+              <tr>
+                <td>${entity.name}</td>
+                <td>${entity.survey}</td>
+                {% comment %} <td>${entity.survey_id}</td> {% endcomment %}
+                <td>${entity.note}</td>
+              </tr>
+            `;
+          });
+
+          tableHTML += `
+              </tbody>
+            </table>
+          `;
+          entitiesContainer.innerHTML = tableHTML;
+        } else {
+          entitiesContainer.innerHTML = "<p class='text-center text-muted'>لا توجد كيانات مطابقة لهذه الإجابة.</p>";
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        entitiesContainer.innerHTML = "<p class='text-center text-danger'>حدث خطأ أثناء جلب البيانات.</p>";
+      });
+  }
+</script>
+<style>
+  .card-header {
+    background-color: #4B6286;
+  }
+  .btn-primary {
+    background-color: #4B6286;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background-color: #4b6282;
+  }
+  .form-select {
+    font-size: 1rem;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}إضافة سؤال{% endblock %}
+
+{% block content %}
+<div class="container" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-12 col-md-10 col-12">
+            <div class="card border-0 rounded-4 animate__animated animate__fadeInUp" data-aos="fade-up">
+                <div class="card-header bg-gradient text-white text-center rounded-top py-4">
+                    <h3 class="mb-0"><i class="fas fa-question-circle"></i> إضافة سؤال </h3>
+                </div>
+                <div class="card-body py-5">
+                    <form method="post" id="questionForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- نص السؤال -->
+                        <div class="mb-4">
+                            <label for="id_text" class="form-label fw-bold">نص السؤال</label>
+                            {{ question_form.text|add_class:"form-control form-control-lg text-end" }}
+                            {% if question_form.text.errors %}
+                            <div class="text-danger mt-1">{{ question_form.text.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- نوع السؤال وتصنيف السؤال -->
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="id_question_type" class="form-label fw-bold">نوع السؤال</label>
+                                {{ question_form.question_type|add_class:"form-select form-select-lg text-end" }}
+                                {% if question_form.question_type.errors %}
+                                <div class="text-danger mt-1">{{ question_form.question_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="id_category" class="form-label fw-bold">تصنيف السؤال</label>
+                                {{ question_form.category|add_class:"form-select form-select-lg text-end" }}
+                                {% if question_form.category.errors %}
+                                <div class="text-danger mt-1">{{ question_form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- قسم الخيارات (يظهر للسؤال متعدد الخيارات أو مجموعة الراديو) -->
+                        <div id="choice-form" style="display: none;">
+                            <h5 class="mt-4">أضف اختيارات للسؤال</h5>
+                            <div id="choices-container" class="mt-3">
+                                <div class="form-group choice-input">
+                                    <label for="choice_0">الخيار 1</label>
+                                    <input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary mt-3 mb-4" id="add-choice-btn">إضافة خيار آخر</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="id_is_active" class="form-label fw-bold text-muted">نشط</label>
+                                <div class="form-check form-switch d-flex justify-content-start">
+                                    <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" checked>
+                                    <label class="form-check-label" for="id_is_active"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- زر الإضافة -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="addbtn btn btn-lg px-5 py-3 rounded-3 shadow-sm hover-shadow">
+                                <i class="fas fa-plus-circle"></i> إضافة السؤال
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مكتبات Toastr لعرض الرسائل -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init();
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const questionTypeSelect = document.querySelector("#id_question_type");
+        const choiceForm = document.getElementById("choice-form");
+        const addChoiceBtn = document.getElementById("add-choice-btn");
+        const choicesContainer = document.getElementById("choices-container");
+
+        function toggleChoiceForm() {
+            choiceForm.style.display = (questionTypeSelect.value === "multiple_choice" || questionTypeSelect.value === "radio") ? "block" : "none";
+        }
+        toggleChoiceForm();
+        questionTypeSelect.addEventListener("change", toggleChoiceForm);
+
+        let choiceIndex = 1; // بدأ العد من الخيار الأخير الذي تم إضافته
+        addChoiceBtn.addEventListener("click", function () {
+            choiceIndex += 1;
+            const newChoiceDiv = document.createElement("div");
+            newChoiceDiv.classList.add("form-group", "choice-input", "mt-2");
+            newChoiceDiv.innerHTML = `<label for="choice_${choiceIndex}">الخيار ${choiceIndex}</label>
+            <input type="text" name="choices[]" class="form-control" id="choice_${choiceIndex}" placeholder="أدخل خياراً">`;
+            choicesContainer.appendChild(newChoiceDiv);
+        });
+
+        document.getElementById("questionForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // منع تحميل الصفحة
+            const formData = new FormData(this);
+            fetch("{% url 'add_question' %}", { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // عرض رسالة النجاح
+                        toastr.success('تم إضافة السؤال بنجاح!', '', {
+                            positionClass: 'toast-top-right',
+                            timeOut: 2000,
+                        });
+
+                        // إخفاء قسم الخيارات بعد الحفظ
+                        choiceForm.style.display = 'none';
+
+                        // إعادة تعيين الحقول
+                        document.getElementById("questionForm").reset();
+                        choicesContainer.innerHTML = '<div class="form-group choice-input"><label for="choice_0">الخيار 1</label><input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً"></div>';
+                    } else {
+                        toastr.error('حدث خطأ أثناء إضافة السؤال. يرجى المحاولة مرة أخرى.', '', {
+                            positionClass: 'toast-top-right',
+                            timeOut: 2000,
+                        });
+                    }
+                })
+                .catch(error => {
+                    toastr.error('تعذر الاتصال بالخادم. يرجى المحاولة لاحقًا.', '', {});
+                });
+        });
+    });
+</script>
+
+<style>
+    /* تخصيص شكل التبديل باستخدام CSS */
+    .form-switch .form-check-input {
+        width: 3em; /* عرض التبديل */
+        height: 25px; /* ارتفاع التبديل */
+        background-color: #e0e0e0; /* اللون الأساسي عند عدم التفعيل */
+        border-radius: 2em; /* جعل الحواف دائرية */
+        transition: background-color 0.3s ease, transform 0.3s ease; /* إضافة تأثيرات سلاسة عند التفعيل */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* إضافة ظل خفيف للتبديل */
+    }
+    
+    /* تخصيص اللون عند التفعيل */
+    .form-switch .form-check-input:checked {
+        background-color: #4CAF50; /* اللون الأخضر عند التفعيل */
+        transform: scale(1.1); /* تكبير التبديل بشكل خفيف عند التفعيل */
+    }
+
+
+    .form-check-input:checked {
+        background-color: #eee;
+        border-color: transparent;
+    }
+
+    /* تأثير hover للمفتاح */
+    .form-switch .form-check-input:hover {
+        cursor: pointer; /* تغيير المؤشر إلى يد */
+    }
+    
+    /* تخصيص الشكل عند التحويم (Hover) */
+    .form-switch .form-check-input:checked:hover {
+        background-color: #43a047; /* تحسين اللون عند التمرير فوق التبديل في حالة التفعيل */
+    }
+    
+    /* تخصيص المسمى بجانب التبديل */
+    .form-switch .form-check-label {
+        font-weight: 500; /* جعل النص ثقيلًا قليلاً */
+        font-size: 1.1rem; /* تحسين حجم الخط */
+        color: #555; /* لون النص */
+        transition: color 0.3s ease; /* سلاسة في تغير اللون */
+    }
+    
+    /* تأثير التسمية عند التركيز */
+    .form-switch .form-check-label:hover {
+        color: #4CAF50; /* تغيير اللون عند التحويم على التسمية */
+    }
+    
+
+
+    .card-header{
+        background-color: #4b6282;
+    }
+    .addbtn{
+        background-color: #4b6282;
+        color: #fff;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 12px 24px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .card-header {
+        border-radius: 16px 16px 0 0;
+    }
+
+    .form-label {
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+
+    .btn-primary {
+        padding: 0.8rem 3rem;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    input[type="checkbox"] {
+        margin-left: 10px;
+    }
+    
+    textarea {
+        width: 100%;
+        height: 100px;
+    }
+</style>
+
+{% endblock %}

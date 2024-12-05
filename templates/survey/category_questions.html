@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}جواب سؤال{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5 text-center" dir="rtl">
+    <h2>اختر تصنيف الاستبيان</h2>
+    <div class="btn-group mt-4">
+        {% for key, value in categories.items %}
+        <a href="{% url 'category_questions' key %}" class="btn btn-primary btn-lg mx-2">{{ value }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+<div class="container mt-5" dir="rtl">
+    <h2 class="text-center">استبيان تصنيف: {{ category }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+        <div class="mb-4">
+            <label class="form-label fw-bold">{{ question.text }}</label>
+            {% if question.question_type == "text" %}
+                <textarea name="answer_text_{{ question.id }}" class="form-control"></textarea>
+            {% elif question.question_type in ["multiple_choice", "radio"] %}
+                {% for choice in question.choices.all %}
+                <div class="form-check">
+                    <input class="form-check-input" type="{{ "radio" if question.question_type == "radio" else "checkbox" }}" 
+                           name="answer_choice_{{ question.id }}" 
+                           value="{{ choice.id }}" id="choice_{{ choice.id }}">
+                    <label class="form-check-label" for="choice_{{ choice.id }}">
+                        {{ choice.text }}
+                    </label>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">حفظ الاستبيان</button>
+    </form>
+</div>
+
+
+
+{% endblock %}

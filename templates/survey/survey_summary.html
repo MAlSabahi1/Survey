@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Write Summary for Survey{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5">Write Summary for "{{ survey.title }}"</h2>
+        <p class="text-muted">{{ survey.description }}</p>
+    </div>
+
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        
+        <!-- Survey Summary -->
+        <div class="card shadow-sm p-4 mb-4">
+            <h4>Survey Summary</h4>
+            {{ summary_form.summary.label_tag }}
+            {{ summary_form.summary }}
+        </div>
+
+        <!-- Question Notes Accordion -->
+        <div class="accordion" id="questionsAccordion">
+            {% for form in question_forms %}
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false" 
+                                aria-controls="collapse{{ forloop.counter }}">
+                            <strong>{{ survey.questions.all|slice:forloop.counter0|last.text }}</strong>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" 
+                         aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#questionsAccordion">
+                        <div class="accordion-body">
+                            {{ form.note.label_tag }}
+                            {{ form.note }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Save Summary & Notes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

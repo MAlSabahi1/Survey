@@ -1,0 +1,638 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}قائمة الأسئلة{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- العنوان العام -->
+    <div class="col-lg-12 text-center mb-4">
+        <div class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4">
+          <h3 class="mb-0"><i class="fas fa-poll"></i> قائمة الاسئلة </h3>
+        </div>
+      </div>
+    <!-- قائمة التصنيفات -->
+    <div class="d-flex justify-content-between mb-4">
+        <!-- حقل البحث -->
+        <div class="w-45">
+            <label for="searchInput" class="form-label fw-bold">بحث:</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن السؤال...">
+        </div>
+        <!-- تصفية حسب التصنيف -->
+        <div class="w-45">
+            <label for="filterCategory" class="form-label fw-bold">تصفية حسب التصنيف:</label>
+            <select id="filterCategory" class="form-select custom-dropdown">
+                <option value="">عرض الكل</option>
+                <option value="staff">الكادر</option>
+                <option value="infrastructure">البنية التحتية</option>
+                <option value="systems">الأنظمة</option>
+            </select>
+        </div>
+        
+    </div>
+    <!-- جدول الأسئلة -->
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>رقم السؤال</th>
+                <th>نص السؤال</th>
+                <th>نوع السؤال</th>
+                <th>التصنيف</th>
+                <th>نشط</th> <!-- إضافة العمود الجديد -->
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="questionTableBody">
+            {% for question in questions %}
+            <tr id="questionRow-{{ question.id }}">
+                <td>{{ question.id }}</td>
+                <td>{{ question.text }}</td>
+                <td>{{ question.get_question_type_display }}</td>
+                <td>{{ question.get_category_display }}</td>
+                <td>
+                    {% if question.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                    {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                    {% endif %}
+                </td> <!-- عرض حالة النشط -->
+                <td>
+                    <!-- زر تعديل -->
+                    <button 
+                        class="btn btn-outline-warning edit-question-btn" 
+                        data-id="{{ question.id }}" 
+                        data-text="{{ question.text }}" 
+                        data-type="{{ question.question_type }}" 
+                        data-category="{{ question.category }}"
+                        data-active="{{ question.is_active }}">
+                        تعديل
+                    </button>
+                    <!-- زر حذف -->
+                    <button class="btn btn-outline-danger delete-question-btn" data-id="{{ question.id }}">
+                        حذف
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- نافذة Modal للتعديل -->
+
+<div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editQuestionModalLabel">تعديل السؤال</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editQuestionForm">
+            {% csrf_token %}
+            <input type="hidden" id="editQuestionId" name="question_id" />
+            
+            <!-- نص السؤال -->
+            <div class="mb-3 form-group">
+              <label for="editText" class="form-label">نص السؤال</label>
+              <input type="text" class="form-control" id="editText" name="text" required placeholder="أدخل نص السؤال">
+            </div>
+            
+            <!-- نوع السؤال -->
+            <div class="mb-3 form-group">
+              <label for="editType" class="form-label">نوع السؤال</label>
+              <select class="form-select" id="editType" name="question_type" required>
+                <option value="text">نص</option>
+                <option value="yes_no">نعم/لا</option>
+                <option value="multiple_choice">اختيار من متعدد</option>
+                <option value="radio">مجموعة أزرار</option>
+              </select>
+            </div>
+            
+            <!-- التصنيف -->
+            <div class="mb-3 form-group">
+              <label for="editCategory" class="form-label">التصنيف</label>
+              <select class="form-select" id="editCategory" name="category" required>
+                <option value="staff">الكادر</option>
+                <option value="infrastructure">البنية التحتية</option>
+                <option value="systems">الأنظمة</option>
+              </select>
+            </div>
+            
+            <!-- قسم الخيارات -->
+            <div id="editChoicesContainer" style="display: none;">
+              <h5 class="mt-4">إضافة خيارات</h5>
+              <div id="editChoices">
+                <!-- الحقول الديناميكية ستُضاف هنا -->
+              </div>
+              <button type="button" id="addEditChoiceBtn" class="btn btn-outline-secondary mt-3">إضافة خيار</button>
+            </div>
+            
+            <!-- حالة النشط -->
+            <div class="mb-3 form-group">
+              <label for="editIsActive" class="form-label">نشط</label>
+              <select class="form-select" id="editIsActive" name="is_active" required>
+                <option value="True">نشط</option>
+                <option value="False">غير نشط</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+          <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<style>
+    .card {
+      background: none;
+      border-radius: 10px;
+    }
+    .card-header{
+      background-color:#4B6282;
+    }
+  
+    .btn {
+      transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  
+  
+/* تحسين الجدول */
+table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+  }
+
+  table.table-hover tbody tr:hover {
+    background-color: #e9ecef;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    /* cursor: pointer; */
+  }
+
+  .table th,
+  .table td {
+    border: 1px solid #dee2e6;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .table thead th {
+    background-color: #4b6282;
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: #f9f9f9;
+    }
+  
+    .table-hover tbody tr:hover {
+      background-color: #e9ecef;
+      cursor: pointer;
+    }
+  
+    .table-dark th {
+      background-color: #4b6282;
+      color: white;
+      text-transform: uppercase;
+    }
+  
+    .nav-tabs .nav-link.active {
+      background-color: #4b6282;
+      color: white;
+    }
+  
+    .nav-tabs .nav-link {
+      border-radius: 5px;
+      padding: 10px 20px;
+    }
+    .form-check .form-check-input {
+       float: right !important ;
+       margin-right: -1.5em !important; 
+  }
+
+
+    /* تحسينات عامة للـ Modal */
+    .modal-content {
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+  
+    .modal-header {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+  
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  
+    .btn-close {
+      background: transparent;
+      border: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+  
+    .btn-close:hover {
+      opacity: 1;
+    }
+  
+    .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  
+    form label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+  
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+  
+    .form-control:focus, .form-select:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+  
+    #editChoicesContainer h5 {
+      font-size: 1.25rem;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+  
+    #addEditChoiceBtn {
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+  
+    .modal-footer {
+      border-top: 1px solid #ddd;
+      margin-top: 20px;
+      padding-top: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+  
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+      border-radius: 8px;
+      padding: 10px 20px;
+    }
+  
+    .btn-primary:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+  
+    .btn-secondary {
+      border-radius: 8px;
+      padding: 10px 20px;
+    }
+  
+    /* تحسين توزيع الحقول */
+    .mb-3 {
+      margin-bottom: 1.5rem !important;
+    }
+  
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    @media (max-width: 768px) {
+      .modal-dialog {
+        max-width: 95%;
+      }
+    }
+
+  </style>
+<!-- مكتبة Toastr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // عند تغيير التصنيف في القائمة المنسدلة
+        $('#filterCategory').on('change', function () {
+            const selectedCategory = $(this).val();
+        
+            $.ajax({
+                url: "{% url 'questions_list' %}",
+                type: 'GET',
+                data: {
+                    category: selectedCategory
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // إعادة بناء الجدول بالبيانات المُفلترة
+                        const tableBody = $('#questionTableBody');
+                        tableBody.empty(); // تفريغ الجدول
+        
+                        response.questions.forEach(function (question) {
+                            const isActiveBadge = question.is_active 
+                            ? '<span class="badge bg-success">نشط</span>' 
+                            : '<span class="badge bg-secondary">غير نشط</span>';
+                            console.log('ID:', question.id, 'Is Active:', question.is_active);
+
+                            const row = `
+                                <tr id="questionRow-${question.id}">
+                                    <td>${question.id}</td>
+                                    <td>${question.text}</td>
+                                    <td>${question.question_type}</td>
+                                    <td>${question.category}</td>
+                                    <td>${isActiveBadge}</td>
+                                    <td>
+                                        <button 
+                                            class="btn btn-outline-warning edit-question-btn" 
+                                            data-id="${question.id}" 
+                                            data-text="${question.text}" 
+                                            data-type="${question.question_type}" 
+                                            data-category="${question.category}"
+                                            data-active="${question.is_active}">
+                                            تعديل
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-question-btn" data-id="${question.id}">
+                                            حذف
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            tableBody.append(row);
+                        });
+        
+                        // إعادة تفعيل وظائف الأزرار بعد التصفية
+                        attachDeleteHandlers();
+                        attachEditHandlers(); // تفعيل زر التعديل
+                    } else {
+                        toastr.error('حدث خطأ أثناء محاولة التصفية.', '', {
+                            positionClass: 'toast-top-right',
+                            timeOut: 2000,
+                        });
+                    }
+                },
+                error: function () {
+                    toastr.error('تعذر الاتصال بالخادم. يرجى المحاولة لاحقًا.', '', {
+                        positionClass: 'toast-top-right',
+                        timeOut: 2000,
+                    });
+                }
+            });
+        });
+                // البحث داخل الجدول
+                $('#searchInput').on('keyup', function() {
+                    const searchTerm = $(this).val().toLowerCase();
+                    $('#questionTableBody tr').filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(searchTerm) > -1)
+                    });
+                });
+
+        function attachEditHandlers() {
+            $('.edit-question-btn').on('click', function () {
+                const questionId = $(this).data('id');
+        
+                // جلب بيانات السؤال باستخدام AJAX
+                $.ajax({
+                    url: `/update_question/${questionId}/`,
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.success) {
+                            const question = response.question;
+        
+                            // تعبئة النموذج
+                            $('#editQuestionId').val(questionId);
+                            $('#editText').val(question.text);
+                            $('#editType').val(question.question_type);
+                            $('#editCategory').val(question.category);
+                            $('#editIsActive').val(question.is_active ? 'True' : 'False'); // تعبئة حالة النشط
+        
+                            // التعامل مع الخيارات
+                            const choicesContainer = $('#editChoicesContainer');
+                            const choicesDiv = $('#editChoices');
+                            choicesDiv.empty(); // تفريغ الخيارات القديمة
+        
+                            if (question.question_type === 'multiple_choice' || question.question_type === 'radio') {
+                                choicesContainer.show();
+                                if (question.choices.length > 0) {
+                                    question.choices.forEach(function (choice) {
+                                        choicesDiv.append(`
+                                            <div class="form-group mb-2">
+                                                <input type="text" name="choices[]" class="form-control" value="${choice}" placeholder="أدخل خياراً">
+                                            </div>
+                                        `);
+                                    });
+                                } else {
+                                    choicesDiv.append(`
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="choices[]" class="form-control" placeholder="أدخل خياراً">
+                                        </div>
+                                    `);
+                                }
+                            } else {
+                                choicesContainer.hide();
+                            }
+        
+                            // عرض الـ Modal
+                            $('#editQuestionModal').modal('show');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('حدث خطأ أثناء جلب بيانات السؤال. يرجى المحاولة لاحقًا.');
+                    }
+                });
+            });
+        }
+        // وظيفة حذف السؤال
+        function attachDeleteHandlers() {
+            $('.delete-question-btn').on('click', function () {
+                const questionId = $(this).data('id');
+                const row = $(`#questionRow-${questionId}`);
+
+                if (confirm('هل أنت متأكد أنك تريد حذف هذا السؤال؟')) {
+                    $.ajax({
+                        url: `/delete_question/${questionId}/`,
+                        type: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                row.fadeOut(500, function () {
+                                    $(this).remove();
+                                });
+                                toastr.success(response.message, '', {
+                                    positionClass: 'toast-top-right',
+                                    timeOut: 2000,
+                                });
+                            } else {
+                                toastr.error(response.message, '', {
+                                    positionClass: 'toast-top-right',
+                                    timeOut: 2000,
+                                });
+                            }
+                        },
+                        error: function () {
+                            toastr.error('حدث خطأ أثناء محاولة الحذف.', '', {
+                                positionClass: 'toast-top-right',
+                                timeOut: 2000,
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // تفعيل الحذف عند تحميل الصفحة
+        attachDeleteHandlers();
+
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        let choiceIndex = 0;
+    
+        // عند النقر على زر التعديل
+        $('.edit-question-btn').on('click', function () {
+            const questionId = $(this).data('id');
+            
+            // جلب بيانات السؤال باستخدام AJAX
+            $.ajax({
+                url: `/update_question/${questionId}/`,
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        const question = response.question;
+        
+                        // تعبئة النموذج
+                        $('#editQuestionId').val(questionId);
+                        $('#editText').val(question.text);
+                        $('#editType').val(question.question_type);
+                        $('#editCategory').val(question.category);
+                        $('#editIsActive').val(question.is_active ? 'True' : 'False'); // تعبئة حالة النشط
+        
+                        // التعامل مع الخيارات
+                        const choicesContainer = $('#editChoicesContainer');
+                        const choicesDiv = $('#editChoices');
+                        choicesDiv.empty(); // تفريغ الخيارات القديمة
+        
+                        if (question.question_type === 'multiple_choice' || question.question_type === 'radio') {
+                            choicesContainer.show();
+                            if (question.choices.length > 0) {
+                                question.choices.forEach(function (choice) {
+                                    choicesDiv.append(`
+                                        <div class="form-group mb-2">
+                                            <input type="text" name="choices[]" class="form-control" value="${choice}" placeholder="أدخل خياراً">
+                                        </div>
+                                    `);
+                                });
+                            } else {
+                                choicesDiv.append(`
+                                    <div class="form-group mb-2">
+                                        <input type="text" name="choices[]" class="form-control" placeholder="أدخل خياراً">
+                                    </div>
+                                `);
+                            }
+                        } else {
+                            choicesContainer.hide();
+                        }
+        
+                        // عرض الـ Modal
+                        $('#editQuestionModal').modal('show');
+                    }
+                },
+                error: function () {
+                    toastr.error('حدث خطأ أثناء جلب بيانات السؤال. يرجى المحاولة لاحقًا.');
+                }
+            });
+        });
+    
+        // إضافة خيار جديد
+        $('#addEditChoiceBtn').on('click', function () {
+            $('#editChoices').append(`
+                <div class="form-group mb-2">
+                    <input type="text" name="choices[]" class="form-control" placeholder="أدخل خياراً">
+                </div>
+            `);
+        });
+    
+        // عند إرسال النموذج
+        $('#editQuestionForm').on('submit', function (e) {
+            e.preventDefault();
+        
+            const questionId = $('#editQuestionId').val();
+            const formData = $(this).serialize();
+        
+            $.ajax({
+                url: `/update_question/${questionId}/`,
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        // تحديث بيانات الجدول
+                        const row = $(`#questionRow-${questionId}`);
+                        row.find('td:nth-child(2)').text($('#editText').val());
+                        row.find('td:nth-child(3)').text($('#editType option:selected').text());
+                        row.find('td:nth-child(4)').text($('#editCategory option:selected').text());
+                        row.find('td:nth-child(5)').html($('#editIsActive').val() === 'True' ? 
+                            '<span class="badge bg-success">نشط</span>' : 
+                            '<span class="badge bg-secondary">غير نشط</span>');
+        
+                        // إغلاق الـ Modal وعرض رسالة نجاح
+                        $('#editQuestionModal').modal('hide');
+                        toastr.success(response.message, '', {
+                            positionClass: 'toast-top-right',
+                            timeOut: 2000,
+                        });
+                    } else {
+                        toastr.error(response.message, '', {
+                            positionClass: 'toast-top-right',
+                            timeOut: 2000,
+                        });
+                    }
+                },
+                error: function () {
+                    toastr.error('حدث خطأ أثناء تعديل السؤال. يرجى المحاولة لاحقًا.');
+                }
+            });
+        });
+        // تحديث الخيارات عند تغيير نوع السؤال
+        $('#editType').on('change', function () {
+            const questionType = $(this).val();
+            const choicesContainer = $('#editChoicesContainer');
+            const choicesDiv = $('#editChoices');
+    
+            if (questionType === 'multiple_choice' || questionType === 'radio') {
+                choicesContainer.show();
+                if (choicesDiv.children().length === 0) {
+                    choicesDiv.append(`
+                        <div class="form-group mb-2">
+                            <input type="text" name="choices[]" class="form-control" placeholder="أدخل خياراً">
+                        </div>
+                    `);
+                }
+            } else {
+                choicesContainer.hide();
+                choicesDiv.empty();
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}عرض الاستبيانات{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <h2 class="text-center mb-4">استبياناتك</h2>
+
+    <!-- علامات التبويب (Tabs) -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="staff-tab" data-bs-toggle="tab" href="#staff-surveys">الكادر</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="infrastructure-tab" data-bs-toggle="tab" href="#infrastructure-surveys">البنية التحتية</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="systems-tab" data-bs-toggle="tab" href="#systems-surveys">الأنظمة</a>
+        </li>
+    </ul>
+
+    <!-- محتوى علامات التبويب -->
+    <div class="tab-content mt-3">
+        <!-- استبيانات الكادر -->
+        <div class="tab-pane fade show active" id="staff-surveys">
+            {% if staff_surveys %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>تاريخ الإنشاء</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for survey in staff_surveys %}
+                            <tr>
+                                <td>{{ survey.created_at }}</td>
+                                <td>
+                                    <a href="{% url 'view_survey' survey.id %}" class="btn btn-primary btn-sm">عرض</a>
+                                    <a href="#" class="btn btn-danger btn-sm">حذف</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>لا يوجد استبيانات لتصنيف الكادر.</p>
+            {% endif %}
+        </div>
+
+        <!-- استبيانات البنية التحتية -->
+        <div class="tab-pane fade" id="infrastructure-surveys">
+            {% if infrastructure_surveys %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>تاريخ الإنشاء</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for survey in infrastructure_surveys %}
+                            <tr>
+                                <td>{{ survey.created_at }}</td>
+                                <td>
+                                    <a href="{% url 'view_survey' survey.id %}" class="btn btn-primary btn-sm">عرض</a>
+                                    {% comment %} <a href="{% url 'delete_survey' survey.id %}" class="btn btn-danger btn-sm">حذف</a> {% endcomment %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>لا يوجد استبيانات لتصنيف البنية التحتية.</p>
+            {% endif %}
+        </div>
+
+        <!-- استبيانات الأنظمة -->
+        <div class="tab-pane fade" id="systems-surveys">
+            {% if systems_surveys %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>تاريخ الإنشاء</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for survey in systems_surveys %}
+                            <tr>
+                                <td>{{ survey.created_at }}</td>
+                                <td>
+                                    <a href="{% url 'view_survey' survey.id %}" class="btn btn-primary btn-sm">عرض</a>
+                                    {% comment %} <a href="{% url 'delete_survey' survey.id %}" class="btn btn-danger btn-sm">حذف</a> {% endcomment %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>لا يوجد استبيانات لتصنيف الأنظمة.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

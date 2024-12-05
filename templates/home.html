@@ -1,0 +1,459 @@
+{% extends "base.html" %} 
+{% block title %}الكيانات والقطاعات{% endblock %}
+{% block content %}
+<div class="container" dir="rtl">
+  <!-- Header Section -->
+  <div
+    class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4"
+  >
+    <h3 class="mb-0"><i class="fas fa-users"></i> الكيانات والقطاعات</h3>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+      <!-- Loop through parent entities -->
+      {% for parent in parent_entities %}
+      <div class="col">
+        <div class="card h-100 rounded-4 border-0 bg-light" data-aos="fade-up" data-aos-duration="1000">
+          <!-- Card Header -->
+          <div class="card-header text-white rounded-top d-flex justify-content-between" style="background: #5e84ab; padding: 20px;">
+            <!-- Display parent entity name -->
+            <h4 class="card-title mb-0 text-truncate" style="font-size: 1.3rem">
+              {{ parent.name }}
+            </h4>
+            <button type="button" class="btn btn-primary btn-md" data-bs-toggle="modal" data-bs-target="#addSectorModal" data-entity-id="{{ parent.id }}">
+              إضافة قطاع
+            </button>
+          </div>
+    
+          <!-- Card Body -->
+          <div class="card-body" style="background-color: #f8f9fa; padding: 20px;">
+            <!-- Display children with permissions -->
+            <ul class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
+              {% for child in child_permissions %}
+              {% if child.parent.id == parent.id %}
+              <li class="list-group-item text-end border-0 d-flex justify-content-between align-items-center"
+                  style="background-color: #f7f7f7; color: #495057; padding: 12px 20px;">
+                <!-- Link to child entity -->
+                <a href="{% url 'categories' child.encoded_id %}" class="fw-bold text-primary text-truncate">
+                  {{ child.name }}
+                </a>
+                <i class="fa-regular fa-building fa-lg"></i>
+              </li>
+              {% endif %}
+              {% endfor %}
+            </ul>
+    
+            <!-- If no children are found -->
+            {% if not child_permissions|yesno:"yes" %}
+            <p class="text-muted text-end" style="font-size: 0.9rem;">
+              لا توجد صلاحيات على الأبناء.
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+  
+  </div>
+  
+  
+
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="addSectorModal"
+    tabindex="-1"
+    aria-labelledby="addSectorModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-top">
+      <div class="modal-content border-0 shadow rounded-5">
+        <div class="modal-header bg-dark text-white position-relative py-4">
+          <h5 class="modal-title mx-auto fw-bold fs-4" id="addSectorModalLabel">
+            إضافة قطاع جديد
+          </h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white position-absolute end-0 me-3"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body p-5">
+          <form id="sectorForm" method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label
+                for="sectorName"
+                class="form-label fw-semibold text-secondary fs-5"
+                >اسم القطاع</label
+              >
+              <input
+                type="text"
+                class="form-control form-control-lg border-0 shadow-sm"
+                id="sectorName"
+                placeholder="أدخل اسم القطاع"
+                required
+              />
+            </div>
+            <input type="hidden" id="entityId" />
+          </form>
+        </div>
+        <div class="modal-footer border-0 d-flex justify-content-center py-4">
+          <button
+            type="button"
+            class="btn btn-outline-light me-2 px-4"
+            data-bs-dismiss="modal"
+          >
+            إلغاء
+          </button>
+          <button
+            type="submit"
+            form="sectorForm"
+            class="btn btn-primary btn-lg px-5 rounded-4"
+          >
+            إضافة القطاع
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <!-- Adding AOS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+  <script>
+    AOS.init();
+  </script>
+
+  <!-- Toggle Sectors Functionality -->
+  <script>
+    function toggleSectors(button) {
+      var cardBody = button.closest(".card-body");
+      var listGroup = cardBody.querySelector(".list-group");
+
+      if (listGroup.style.maxHeight === "none") {
+        listGroup.style.maxHeight = "150px";
+        button.innerHTML = "عرض المزيد";
+      } else {
+        listGroup.style.maxHeight = "none";
+        button.innerHTML = "عرض أقل";
+      }
+    }
+  </script>
+  
+<script>
+  // افتح الـ modal مع تعيين معرف الكيان
+  var addSectorModal = document.getElementById("addSectorModal");
+  
+  addSectorModal.addEventListener("show.bs.modal", function (event) {
+      var button = event.relatedTarget;
+      var entityId = button.getAttribute("data-entity-id");
+      var modalEntityId = addSectorModal.querySelector("#entityId");
+      modalEntityId.value = entityId;
+  });
+  
+  // إرسال النموذج عبر AJAX
+// إرسال النموذج عبر AJAX
+$("#sectorForm").submit(function (event) {
+  event.preventDefault(); // منع النموذج من أن يتم تقديمه بالطريقة المعتادة
+
+  var sectorName = $("#sectorName").val(); // الحصول على اسم القطاع
+  var entityId = $("#entityId").val(); // الحصول على الـ entity ID
+
+  // التأكد من أن المدخلات ليست فارغة قبل الإرسال
+  if (!sectorName || !entityId) {
+      alert("يرجى ملء جميع الحقول.");
+      return;
+  }
+
+  $.ajax({
+      url: '{% url "create_sector" %}', // تأكد من أن المسار صحيح
+      type: "POST",
+      data: {
+          sector_name: sectorName,
+          entity_id: entityId,
+          csrfmiddlewaretoken: "{{ csrf_token }}", // استخدام CSRF token للحماية
+      },
+      success: function (response) {
+          if (response.success) {
+              // تحديث الواجهة بعد إضافة القطاع بنجاح
+              var entityCard = $( 'button[data-entity-id="' + entityId + '"]' ).closest(".card-body"); // العثور على البطاقة (card)
+
+              // إضافة القطاع الجديد إلى قائمة القطاعات في البطاقة
+              entityCard.find(".list-group").append(
+                  '<li class="list-group-item">' + response.sector_name + "</li>"
+              );
+
+              // إغلاق الـ modal بعد إضافة القطاع
+              $("#addSectorModal").modal("hide");
+
+              // عرض رسالة احترافية باستخدام SweetAlert2
+              Swal.fire({
+                  icon: "success",
+                  title: "تم إضافة القطاع بنجاح",
+                  text: "تم إضافة القطاع الجديد إلى الكيان المحدد بنجاح.",
+                  showConfirmButton: true, // عرض زر "موافق"
+                  confirmButtonText: "موافق",
+                  timer: 5000, // الرسالة ستظل 5 ثوانٍ فقط
+                  timerProgressBar: true, // إضافة شريط التقدم للوقت
+              });
+          } else {
+              // إذا فشلت الإضافة لسبب ما
+              Swal.fire({
+                  icon: "error",
+                  title: "حدث خطأ أثناء إضافة القطاع",
+                  text: "لم نتمكن من إضافة القطاع. حاول مرة أخرى لاحقًا.",
+                  showConfirmButton: true,
+                  confirmButtonText: "موافق",
+                  timer: 5000,
+                  timerProgressBar: true,
+              });
+          }
+      },
+      error: function () {
+          // إذا حدث خطأ في الطلب
+          Swal.fire({
+              icon: "error",
+              title: "حدث خطأ في الإرسال",
+              text: "نأسف، حدث خطأ أثناء إرسال البيانات. يرجى المحاولة لاحقًا.",
+              showConfirmButton: true,
+              confirmButtonText: "موافق",
+              timer: 5000,
+              timerProgressBar: true,
+          });
+      }
+  });
+});
+
+</script>
+
+  <!-- تحسينات CSS المتقدمة للتصميم -->
+  <style>
+    .btn-primary {
+      color: #fff !important;
+      background-color: #57779e !important; 
+      border-color: #ffffff !important;
+  }
+
+.btn-primary:hover {
+    color: #fff !important;
+    background-color: #4b6282 !important;
+    border-color: #57779e !important;
+}
+.list-group {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0;
+  border-radius: .25rem;
+}
+    /* تدرج لوني للعناوين */
+    .text-gradient-primary {
+      background: -webkit-linear-gradient(45deg, #007bff, #0056b3);
+      /* -webkit-background-clip: text; */
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* تحسينات على البطاقات */
+    .card {
+      transition: all 0.4s ease;
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+    }
+
+     /* .card-header {
+      background: linear-gradient(45deg, #007bff, #0056b3);
+      font-size: 1.2rem;
+      padding: 15px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }  */
+    .card-header {
+      background-color: #4b6282;
+      color: white;
+      padding: 15px 20px;
+    }
+
+    .card-body {
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+
+    /* تأثيرات التفاعل على البطاقة */
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    .card-header a{
+      text-decoration: none;
+      color: #eee;
+      font-weight: bold;
+    }
+    .card-body a{
+      text-decoration: none;
+      color: #5e84ab;
+      font-weight: bold;
+    }
+    .card-body span{
+      color: #5e84ab !important;
+    }
+    /* {% comment %} .card-header:hover {
+      background: linear-gradient(45deg, #0056b3, #003366);
+    } {% endcomment %} */
+
+    /* تحسين عرض القطاعات */
+    .list-group-item {
+      background-color: #f7f7f7;
+      color: #495057;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      padding: 12px 20px;
+    }
+
+    .list-group-item:hover {
+      background-color: #e9ecef;
+      color: #007bff;
+    }
+
+    /* تحسين التجاوب */
+    @media (max-width: 768px) {
+      .card-title {
+        font-size: 1.1rem;
+      }
+
+      .card-header {
+        padding: 10px;
+      }
+
+      .card-body {
+        padding: 15px;
+      }
+
+      .list-group-item {
+        padding: 10px 15px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .card-title {
+        font-size: 1rem;
+      }
+
+      .list-group-item {
+        padding: 8px 10px;
+      }
+
+      .card-header {
+        padding: 8px;
+      }
+
+      .card-body {
+        padding: 10px;
+      }
+    }
+    /* وضع الـ modal في الأعلى */
+    .modal-top {
+      top: 0;
+    }
+
+    /* تحسين تصميم الـ modal */
+    .modal-content {
+      border-radius: 1.25rem;
+      background: #ffffff; /* خلفية بيضاء */
+      box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15); /* ظلال خارجية */
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.4s ease-in-out;
+    }
+
+    .modal.fade.show .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .modal-header {
+      background: linear-gradient(45deg, #007bff, #0056b3);
+      color: #ffffff;
+      padding: 1.5rem;
+      border-top-left-radius: 1.25rem;
+      border-top-right-radius: 1.25rem;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 2.5rem;
+      font-size: 1.1rem;
+      background-color: #f9fafc; /* خلفية خفيفة للمحتوى */
+      border-bottom-left-radius: 1.25rem;
+      border-bottom-right-radius: 1.25rem;
+    }
+
+    .modal-footer {
+      border-top: none;
+      padding-top: 1rem;
+      display: flex;
+      justify-content: center;
+      background-color: #f1f3f5;
+    }
+
+    .form-control-lg {
+      border-radius: 0.75rem;
+      padding: 0.8rem;
+      font-size: 1.05rem;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .modal .btn-primary {
+      background-color: #007bff;
+      border: none;
+      padding: 0.6rem 2rem;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .modal .btn-primary:hover {
+      background-color: #0056d2;
+    }
+
+    .modal .btn-outline-light {
+      color: #6c757d;
+      border: 1px solid #6c757d;
+      transition: all 0.3s ease;
+    }
+
+    .modal .btn-outline-light:hover {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    /* تأثير تكبير أنيق عند الفتح */
+    .modal-content {
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+
+    .modal.fade.show .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+  </style>
+  {% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}View and Edit Survey Answers{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5">{{ survey.title }}</h2>
+        <p class="text-muted">{{ survey.description }}</p>
+    </div>
+
+    <hr class="mb-4">
+    <h3 class="mb-4">اجابات الاستبيان حسب الكيانات والقطاعات (قابل للتعديل)</h3>
+
+    <!-- Loop through each entity and display answers -->
+    {% for entity_id, entity_data in entity_answers.items %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white text-end">
+                <h5 class="mb-0">
+                    <button class="btn btn-link text-white" data-bs-toggle="collapse" data-bs-target="#collapseEntity{{ entity_id }}" aria-expanded="false" aria-controls="collapseEntity{{ entity_id }}">
+                        {{ entity_data.entity.name }}
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseEntity{{ entity_id }}" class="collapse">
+                <div class="card-body">
+                    <h6 class="text-secondary">إجابات الكيان</h6>
+                    
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>السؤال</th>
+                                <th>الإجابة</th>
+                                <th>ملاحظة</th> <!-- Column for the note -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question_text, answer_data in entity_data.answers.items %}
+                                <tr>
+                                    <td><strong>{{ question_text }}</strong></td>
+                                    <td>
+                                        {% if answer_data.choices %}
+                                            <!-- Display multiple-choice answers as a comma-separated list -->
+                                            {% for choice in answer_data.choices %}
+                                                {{ choice }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        {% elif answer_data.text_answer %}
+                                            {{ answer_data.text_answer }}
+                                        {% elif answer_data.yes_no_answer %}
+                                            {{ answer_data.yes_no_answer|yesno:"نعم,لا" }}
+                                        {% else %}
+                                            <p class="text-muted">No response provided</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if answer_data.note %}
+                                            {{ answer_data.note }}
+                                        {% else %}
+                                            <p class="text-muted">No note provided</p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Sector answers, if any -->
+                    {% if entity_data.sectors %}
+                        <h6 class="text-secondary mt-4">إجابات القطاعات</h6>
+                        {% for sector_id, sector_data in entity_data.sectors.items %}
+                            <div class="card mt-3 border-secondary">
+                                <div class="card-header bg-light text-end">
+                                    <h6 class="mb-0">
+                                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#collapseSector{{ sector_id }}" aria-expanded="false" aria-controls="collapseSector{{ sector_id }}">
+                                            {{ sector_data.sector.name }}
+                                        </button>
+                                    </h6>
+                                </div>
+                                <div id="collapseSector{{ sector_id }}" class="collapse">
+                                    <div class="card-body">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>السؤال</th>
+                                                    <th>الإجابة</th>
+                                                    <th>ملاحظة</th> <!-- Column for the note -->
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for question_text, answer_data in sector_data.answers.items %}
+                                                    <tr>
+                                                        <td><strong>{{ question_text }}</strong></td>
+                                                        <td>
+                                                            {% if answer_data.choices %}
+                                                                {% for choice in answer_data.choices %}
+                                                                    {{ choice }}{% if not forloop.last %}, {% endif %}
+                                                                {% endfor %}
+                                                            {% elif answer_data.text_answer %}
+                                                                {{ answer_data.text_answer }}
+                                                            {% elif answer_data.yes_no_answer %}
+                                                                {{ answer_data.yes_no_answer|yesno:"نعم,لا" }}
+                                                            {% else %}
+                                                                <p class="text-muted">No response provided</p>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if answer_data.note %}
+                                                                {{ answer_data.note }}
+                                                            {% else %}
+                                                                <p class="text-muted">No note provided</p>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="text-center mt-5">
+        <a href="{% url 'survey_list' %}" class="btn btn-outline-secondary">Back to Surveys</a>
+    </div>
+</div>
+{% endblock %}

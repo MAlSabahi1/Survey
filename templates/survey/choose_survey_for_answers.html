@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Survey to View Answers{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="display-5">Choose a Survey to View Answers</h2>
+        <p class="text-muted">Select a survey below to see the responses</p>
+    </div>
+    
+
+    <div class="card shadow-sm p-4">
+        <ul class="list-group list-group-flush">
+            {% for survey in surveys %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">{{ survey.title }}</span>
+                    <a href="{% url 'view_survey_answers' survey_id=survey.id %}" class="btn btn-outline-primary btn-sm">
+                        View Answers
+                    </a>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-center text-muted">No surveys available.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

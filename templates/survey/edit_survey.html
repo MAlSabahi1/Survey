@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block title %}تعديل الاستبيان{% endblock %}
+{% block content %}
+<div class="container" dir="rtl">
+  <!-- Title Section -->
+  <div class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4">
+    <h3 class="text-center mb-0" style="color: #2c3e50; font-weight: bold; letter-spacing: 0.05em">
+      <i class="fa-regular fa-circle-question"></i> تعديل الاستبيان
+    </h3>
+  </div>
+
+  <!-- Survey Form -->
+  <form method="post" id="survey-form">
+    {% csrf_token %}
+    <div class="row g-4">
+      <div class="form-group mb-4">
+        <label for="survey-title" class="form-label" style="font-size: 1.1rem; font-weight: bold; color: #34495e;">اسم الاستبيان</label>
+        <input
+          type="text"
+          id="survey-title"
+          name="survey_title"
+          value="{{ survey.name }}"
+          class="form-control p-3 border-1 shadow-sm rounded-3"
+          placeholder="أدخل اسم الاستبيان هنا"
+        />
+      </div>
+      {% for question in questions %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <!-- Question Label -->
+            <h5 class="card-title mb-3" style="font-size: 1.1rem; color: #34495e; font-weight: bold">
+              {{ forloop.counter }}. {{ question.text }}
+            </h5>
+            <div class="mt-3">
+            <!-- Question Field Based on Type -->
+            {% if question.question_type == 'text' %}
+            <input
+              type="text"
+              name="question_{{ question.id }}"
+              value="{{ answers|get_answer_text:question.id }}"
+              class="form-control p-3 border-1 shadow-sm rounded-3"
+              placeholder="أدخل إجابتك هنا"
+            />
+            {% elif question.question_type == 'yes_no' %}
+            <div class="form-check">
+              <input
+                type="radio"
+                name="question_{{ question.id }}"
+                value="yes"
+                id="yes_{{ question.id }}"
+                class="form-check-input"
+                {% if answers|get_answer_text:question.id == 'yes' %}checked{% endif %}
+              />
+              <label class="form-check-label" for="yes_{{ question.id }}">نعم</label>
+            </div>
+            <div class="form-check mb-2">
+              <input
+                type="radio"
+                name="question_{{ question.id }}"
+                value="no"
+                id="no_{{ question.id }}"
+                class="form-check-input"
+                {% if answers|get_answer_text:question.id == 'no' %}checked{% endif %}
+              />
+              <label class="form-check-label" for="no_{{ question.id }}">لا</label>
+            </div>
+            {% elif question.question_type == 'multiple_choice' or question.question_type == 'radio' %}
+            {% for choice in question.choices.all %}
+            <div class="form-check mb-2">
+              <input
+                type="{% if question.question_type == 'radio' %}radio{% else %}checkbox{% endif %}"
+                name="question_{{ question.id }}"
+                value="{{ choice.id }}"
+                id="choice_{{ choice.id }}"
+                class="form-check-input"
+                {% if choice.id in answers|get_selected_choices:question.id %}checked{% endif %}
+              />
+              <label class="form-check-label" for="choice_{{ choice.id }}">{{ choice.text }}</label>
+            </div>
+            {% endfor %}
+            {% endif %}
+                <!-- إضافة حقل إدخال للملاحظات -->
+                <textarea
+                name="note_{{ question.id }}"
+                class="form-control mt-3"
+                placeholder="أدخل ملاحظتك هنا">{{ notes|get_item:question.id }}</textarea>
+          </div>
+        </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center mt-5">
+      <button type="submit" class="btn btn-primary btn-lg px-5 py-3" style="background-color: #3498db; border: none; border-radius: 50px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
+        حفظ التعديلات
+      </button>
+    </div>
+  </form>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // عرض رسالة تأكيد أولاً
+  const form = document.getElementById('survey-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();  // منع إرسال النموذج مباشرة
+
+    // عرض رسالة تأكيد أولاً
+    Swal.fire({
+      title: 'هل أنت متأكد؟',
+      text: 'لن تتمكن من التراجع عن هذا التعديل!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'نعم، حفظ التعديلات',
+      cancelButtonText: 'إلغاء',
+      confirmButtonColor: '#3498db',
+      cancelButtonColor: '#d33'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // بعد التأكيد عرض رسالة الحفظ
+        Swal.fire({
+          icon: 'success',
+          title: 'تم حفظ التعديلات!',
+          text: 'لقد تم حفظ التعديلات بنجاح.',
+          showConfirmButton: false, // إخفاء زر "موافق"
+          timer: 1500  // الرسالة تختفي بعد ثانية ونصف
+        }).then(function() {
+          form.submit();  // إرسال النموذج بعد اختفاء الرسالة
+        });
+      } else {
+        // في حالة إلغاء الحذف، لا يحدث شيء
+        Swal.fire({
+          icon: 'info',
+          title: 'تم الإلغاء',
+          text: 'لم يتم حفظ التعديلات.',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    });
+  });
+</script>
+
+
+<style>
+  /* Title styling */
+  h3 {
+    color: #fff !important;
+  }
+
+  /* Card styling */
+  .card {
+    background-color: #fff;
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out;
+    border: none;
+  }
+
+  .card-header {
+    background-color: #4b6282;
+    color: white;
+    padding: 15px 20px;
+  }
+  .card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-title {
+    color: #34495e;
+    font-weight: 600;
+  }
+
+  /* Form input styling */
+  .form-control,
+  .form-select {
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+    background-color: #fff;
+  }
+
+  /* Button hover effect */
+  button:hover {
+    transform: scale(1.05);
+    background-color: #2980b9;
+  }
+
+  /* Form check styling */
+  .form-check-input {
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+  }
+
+  .form-check-input:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+
+  /* Submit button hover */
+  button {
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 2rem;
+    }
+
+    .btn {
+      font-size: 1rem;
+    }
+
+    .card {
+      margin-bottom: 20px;
+    }
+  }
+
+  .form-check .form-check-input {
+    float: right !important ;
+    margin-right: -1.7em !important;
+  }
+  .form-check {
+    padding-right: 1.7em;
+  }
+  .form-check-input {
+    width: 1.2em !important;
+    height: 1.2em !important;
+  }
+</style>
+
+<script>
+  // Show the toast notification after form submission
+  const form = document.getElementById('survey-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();  // Prevent the form from submitting immediately
+    const toast = new bootstrap.Toast(document.getElementById('toast-message'));
+    toast.show();  // Show the toast message
+
+    // Delay form submission to allow the toast to appear
+    setTimeout(function() {
+      form.submit(); // Submit the form after toast is displayed
+    }, 1500); // Adjust the timeout to match the toast display duration
+  });
+</script>
+
+{% endblock %}

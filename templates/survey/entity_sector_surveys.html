@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Surveys{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Surveys</h2>
+
+    {% if surveys %}
+        <ul class="list-group mt-4">
+            {% for survey in surveys %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ survey.title }}
+                    <a href="{% url 'view_survey' survey.id %}" class="btn btn-primary btn-sm">View Survey</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted mt-4">No surveys available for this selection.</p>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'entity_sector_selection' %}" class="btn btn-secondary">Back to Selection</a>
+    </div>
+</div>
+{% endblock %}

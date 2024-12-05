@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Satisfaction Report{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Satisfaction Report for {{ survey.title }}</h2>
+    
+    {% if avg_satisfaction %}
+        <p>Average Satisfaction Score: {{ avg_satisfaction|floatformat:2 }}</p>
+    {% else %}
+        <p class="text-muted">No satisfaction data available for this survey.</p>
+    {% endif %}
+</div>
+{% endblock %}

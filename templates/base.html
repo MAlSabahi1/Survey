@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="تطبيق الاستبيان لإدارة الأسئلة والكيانات بسهولة" />
+    <meta name="keywords" content="استبيان, إدارة الأسئلة, تقارير, لوحة المستخدم, تطبيق" />
+    <meta name="author" content="Your Organization" />
+    <title>{% block title %}تطبيق الاستبيان{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Cairo", sans-serif !important;
+        background-color: #f5f6fa;
+        margin: 0;
+        overflow-x: hidden;
+        color: #333;
+      }
+
+      /* الشريط الجانبي */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 260px;
+        height: 100vh;
+        background: linear-gradient(145deg, #283e56, #3b5166);
+        color: #fff;
+        padding: 20px;
+        transition: all 0.3s ease;
+        z-index: 999;
+        box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
+        border-radius: 0 8px 8px 0;
+      }
+
+      .sidebar-content {
+        height: calc(100% - 50px);
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+
+      .sidebar-content::-webkit-scrollbar {
+        display: none;
+      }
+
+      .sidebar h5 {
+        font-size: 1.8rem;
+        color: #f1faee;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .sidebar h6 {
+        font-size: 1.4rem;
+        color: #f1faee;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 20px 0 10px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+        padding-bottom: 6px;
+        text-align: center;
+        /* background: rgba(255, 255, 255, 0.1); */
+        border-radius: 8px;
+        /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); */
+      }
+
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        color: #a8dadc;
+        text-decoration: none;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar a i {
+        margin-left: 15px;
+        font-size: 1.4em;
+        transition: transform 0.2s;
+        color: #f1faee;
+      }
+
+      /* تأثير الزجاج عند التمرير */
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        transform: translateX(10px);
+        box-shadow: 0 8px 15px rgba(255, 255, 255, 0.2), 0 4px 6px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+      }
+
+      .sidebar a:hover i {
+        transform: rotate(20deg);
+        color: #ffffff;
+      }
+
+      .sidebar a.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: bold;
+        box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .sidebar .separator {
+        border-top: 1px solid #a8dadc;
+        margin: 25px 0;
+      }
+
+      .sidebar.collapsed {
+        width: 100px;
+      }
+
+      .sidebar.collapsed h6 {
+        display: none;
+      }
+
+      .sidebar.collapsed a {
+        justify-content: center;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+
+      .sidebar.collapsed i {
+        margin-left: 0;
+      }
+
+      .sidebar.collapsed span {
+        display: none;
+      }
+
+      .content {
+        margin-right: 260px;
+        padding: 20px;
+        transition: margin-right 0.3s;
+        background: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      .content.collapsed {
+        margin-right: 80px;
+      }
+
+      /* زر التصغير */
+      .sidebar-toggle-btn {
+        background-color: #3b5166;
+        color: #fff;
+        font-size: 1.6rem;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5%;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        left: -35px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: background-color 0.3s, transform 0.2s;
+      }
+
+      .sidebar-toggle-btn:hover {
+        background-color: #2c3e50;
+        color: #fff;
+        transform: scale(1.1);
+      }
+
+      .sidebar-toggle-btn:focus {
+        outline: none;
+      }
+
+      .sidebar-toggle-btn i {
+        font-size: 1.4rem;
+      }
+
+      /* تحسينات مرئية */
+      a:hover {
+        text-decoration: none;
+      }
+
+      a:focus {
+        outline: none;
+      }
+
+      @media (max-width: 768px) {
+        /* .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+          border-radius: 0;
+          padding: 10px 0;
+        } */
+
+        .content {
+          margin-right: 0;
+          padding: 10px;
+        }
+
+        /* .sidebar.collapsed {
+          width: auto;
+        } */
+
+        .sidebar.collapsed a {
+          justify-content: center;
+        }
+
+        .sidebar-toggle-btn {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% if user.is_authenticated %}
+    <div class="sidebar" id="sidebar">
+      <button id="overlayBtn" class="sidebar-toggle-btn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h5 id="sidebarTitle">لوحة التحكم</h5>
+      <div class="sidebar-content">
+        <a href="{% url 'home' %}" class="active">
+          <i class="fas fa-home"></i><span>الرئيسية</span>
+        </a>
+        <h6>إدارة الاسئلة</h6>
+        <a href="{% url 'add_question' %}">
+          <i class="fas fa-plus-circle"></i><span>إضافة سؤال</span>
+        </a>
+        <a href="{% url 'questions_list' %}">
+          <i class="fas fa-list"></i><span>عرض جميع الأسئلة</span>
+        </a>
+        <h6>إدارة الكيانات</h6>
+        <a href="{% url 'create_entitys' %}">
+          <i class="fas fa-building"></i><span>إنشاء كيان جديد</span>
+        </a>
+        <a href="{% url 'entity_list' %}">
+          <i class="fas fa-list-alt"></i><span>عرض جميع الكيانات</span>
+        </a>
+        <h6>تقارير</h6>
+        {% if user.is_authenticated and user.is_staff %}
+        <a href="{% url 'answer_report' %}">
+          <i class="fas fa-chart-bar"></i><span>تقرير بحسب الإجابة</span>
+        </a>
+        <a href="{% url 'question_report' %}">
+          <i class="fas fa-chart-pie"></i><span>تقرير بحسب السؤال</span>
+        </a>
+        {% endif %}
+        <h6>إدارة المستخدمين</h6>
+        <a href="{% url 'create_user' %}">
+          <i class="fas fa-user-plus"></i><span>إنشاء مستخدم جديد</span>
+        </a>
+        <a href="{% url 'group_list' %}">
+          <i class="fas fa-users"></i><span>المجموعات</span>
+        </a>
+        <a href="{% url 'user_list' %}">
+          <i class="fas fa-user"></i><span>المستخدمين</span>
+        </a>
+        <a href="{% url 'logout' %}">
+          <i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span>
+        </a>        
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="content" id="content">{% block content %}{% endblock %}</div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const sidebar = document.getElementById("sidebar");
+        const content = document.getElementById("content");
+        const sidebarToggleBtn = document.getElementById("overlayBtn");
+        const sidebarTitle = document.getElementById("sidebarTitle");
+
+        if (localStorage.getItem("sidebarCollapsed") === "true") {
+          sidebar.classList.add("collapsed");
+          content.classList.add("collapsed");
+          sidebarTitle.style.display = "none";
+        }
+
+        sidebarToggleBtn.addEventListener("click", function () {
+          sidebar.classList.toggle("collapsed");
+          content.classList.toggle("collapsed");
+          sidebarTitle.style.display = sidebar.classList.contains("collapsed")
+            ? "none"
+            : "block";
+
+          localStorage.setItem(
+            "sidebarCollapsed",
+            sidebar.classList.contains("collapsed")
+          );
+        });
+      });
+    </script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

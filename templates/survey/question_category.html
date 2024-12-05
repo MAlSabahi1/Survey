@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}إضافة سؤال{% endblock %}
+
+{% block content %}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .category-btn {
+        margin: 10px;
+        padding: 12px 24px;
+        font-size: 1.1rem;
+        border-radius: 9px;
+        transition: background-color 0.3s;
+    }
+    .category-btn:hover {
+        background-color: #0056b3;
+    }
+    .card {
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .card-title {
+        font-size: 1.4rem;
+        cursor: pointer;
+        color: #007bff;
+    }
+    .modal-content {
+        border-radius: 15px;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="card-header bg-gradient bg-primary text-white text-center rounded-top py-4 mb-5">
+        <h3 class="mb-0"><i class="fas fa-poll-h"></i> عرض الأسئلة</h3>
+    </div>
+    
+    <!-- أزرار جديدة لفتح Modal -->
+    <div class="text-center mb-4">
+        <button class="btn btn-success category-btn" onclick="openQuestionModal('سؤال 1 إضافي', 'ماذا تفكر في الكادر؟')">اجابة اسئلة الكادر</button>
+        <button class="btn btn-info category-btn" onclick="openQuestionModal('سؤال 2 إضافي', 'كيف تقييم البنية التحتية؟')">اجابة اسئلة البنية التحتية</button>
+        <button class="btn btn-warning category-btn" onclick="openQuestionModal('سؤال 3 إضافي', 'هل الأنظمة الحالية كافية؟')">اجابة اسئلة الانظمة</button>
+    </div>
+    <div class="text-center mb-4">
+        <button class="btn btn-primary category-btn" onclick="toggleDropdown('staffDropdown')">الكادر</button>
+        <button class="btn btn-primary category-btn" onclick="toggleDropdown('infrastructureDropdown')">البنية التحتية</button>
+        <button class="btn btn-primary category-btn" onclick="toggleDropdown('systemsDropdown')">الأنظمة</button>
+    </div>
+
+
+    <div class="dropdown" id="staffDropdown" style="display: none;">
+        <div class="card" onclick="showQuestions('سؤال 1 للكادر')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 1 للكادر</h5>
+            </div>
+        </div>
+        <div class="card" onclick="showQuestions('سؤال 2 للكادر')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 2 للكادر</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="dropdown" id="infrastructureDropdown" style="display: none;">
+        <div class="card" onclick="showQuestions('سؤال 1 للبنية التحتية')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 1 للبنية التحتية</h5>
+            </div>
+        </div>
+        <div class="card" onclick="showQuestions('سؤال 2 للبنية التحتية')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 2 للبنية التحتية</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="dropdown" id="systemsDropdown" style="display: none;">
+        <div class="card" onclick="showQuestions('سؤال 1 للأنظمة')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 1 للأنظمة</h5>
+            </div>
+        </div>
+        <div class="card" onclick="showQuestions('سؤال 2 للأنظمة')">
+            <div class="card-body">
+                <h5 class="card-title">سؤال 2 للأنظمة</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for displaying questions -->
+<div class="modal fade" id="questionsModal" tabindex="-1" aria-labelledby="questionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="questionsModalLabel">تفاصيل السؤال</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Questions details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-primary" onclick="submitAnswer()">إرسال الإجابة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleDropdown(dropdownId) {
+        const dropdowns = ['staffDropdown', 'infrastructureDropdown', 'systemsDropdown'];
+        dropdowns.forEach(id => {
+            document.getElementById(id).style.display = id === dropdownId ? 'block' : 'none';
+        });
+    }
+
+    function showQuestions(questionTitle) {
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `<p>هنا تفاصيل ${questionTitle}</p>`;
+        const modal = new bootstrap.Modal(document.getElementById('questionsModal'));
+        modal.show();
+    }
+
+    function openQuestionModal(title, question) {
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <h5>${question}</h5>
+            <input type="text" class="form-control mb-3" placeholder="أدخل إجابتك هنا" id="answerInput">
+            <label for="answerInput">الرجاء الإجابة على السؤال:</label>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('questionsModal'));
+        modal.show();
+    }
+
+    function submitAnswer() {
+        const answer = document.getElementById('answerInput').value;
+        alert(`تم إرسال الإجابة: ${answer}`);
+    }
+</script>
+
+{% endblock %}

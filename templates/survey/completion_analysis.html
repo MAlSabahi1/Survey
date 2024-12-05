@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}نسبة إكمال الاستبيان{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-end">نسبة إكمال الاستبيان</h2>
+
+    <h3 class="mt-4">استبيان: {{ survey.title }}</h3>
+    <p>إجمالي الردود: {{ total_responses }}</p>
+    <p>نسبة الإكمال: {{ completion_rate }}%</p>
+
+    <div class="mt-4">
+        <a href="{% url 'survey_report'%}" class="btn btn-primary">العودة إلى التقرير الرئيسي</a>
+    </div>
+</div>
+{% endblock %}

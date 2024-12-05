@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}ملخص الاستبيان{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">تقرير ملخص للاستبيان: {{ survey.title }}</h2>
+    <p>إجمالي الردود: {{ total_responses }}</p>
+    <p>توزيع أنواع الأسئلة: {{ question_types }}</p>
+</div>
+{% endblock %}

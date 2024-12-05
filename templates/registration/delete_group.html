@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>حذف المجموعة: {{ group.name }}</h2>
+    <p>هل أنت متأكد من أنك تريد حذف هذه المجموعة؟</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">حذف</button>
+        <a href="{% url 'group_list' %}" class="btn btn-secondary">إلغاء</a>
+    </form>
+</div>
+{% endblock %}

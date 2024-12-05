@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Entities{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <h2 class="text-end mb-4">الكيانات</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for entity in entities %}
+            <div class="col">
+                <div class="card h-100 shadow-lg rounded border-0">
+                    <div class="card-header bg-primary text-white text-end">
+                        <h4 class="card-title mb-0">{{ entity.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-muted text-end">{{ entity.description }}</p>
+
+                        <!-- Sectors associated with the entity -->
+                        {% if entity.sectors.all %}
+                            <h6 class="text-end text-secondary">القطاعات المرتبطة</h6>
+                            <ul class="list-group list-group-flush mb-3">
+                                {% for sector in entity.sectors.all %}
+                                    <li class="list-group-item text-end">
+                                        <i class="fas fa-sitemap text-secondary ms-2"></i> {{ sector.name }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted text-end">لا توجد قطاعات مرتبطة بهذا الكيان.</p>
+                        {% endif %}
+
+                       
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center text-muted">لا توجد كيانات متاحة.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

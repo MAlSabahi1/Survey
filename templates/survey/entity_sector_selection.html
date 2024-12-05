@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Select Entity or Sector{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Select an Entity or Sector</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="entity">Entity</label>
+            <select name="entity" id="entity" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Select an Entity --</option>
+                {% for entity in entities %}
+                    <option value="{{ entity.id }}" {% if entity.id|stringformat:"s" == selected_entity_id %}selected{% endif %}>{{ entity.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if sectors %}
+            <div class="mb-3">
+                <label for="sector">Sector</label>
+                <select name="sector" id="sector" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Select a Sector --</option>
+                    {% for sector in sectors %}
+                        <option value="{{ sector.id }}" {% if sector.id|stringformat:"s" == selected_sector_id %}selected{% endif %}>{{ sector.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+    </form>
+
+    {% if surveys %}
+        <h3 class="mt-4">Surveys</h3>
+        <ul class="list-group">
+            {% for survey in surveys %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ survey.title }}
+                    <a href="{% url 'view_survey' survey.id %}" class="btn btn-primary btn-sm">View Survey</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif surveys is not None %}
+        <p class="text-muted mt-4">No surveys available for this selection.</p>
+    {% endif %}
+</div>
+{% endblock %}

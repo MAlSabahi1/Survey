@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}تقرير السؤال{% endblock %}
+
+{% block content %}
+<div class="container" dir="rtl">
+  <div class="row justify-content-center">
+    <div class="col-lg-12 col-md-9 col-12">
+      <div class="card border-0 rounded-4 animate__animated animate__fadeInUp" data-aos="fade-up">
+        <div class="card-header bg-gradient text-white text-center rounded-top py-4">
+          <h1 class="mb-0"><i class="fas fa-chart-bar"></i> تقرير السؤال</h1>
+        </div>
+        <div class="card-body p-5">
+          <div class="mb-4">
+            <label for="question-select" class="form-label fw-bold">اختر السؤال</label>
+            <select id="question-select" class="form-control form-control-lg text-end">
+              <option value="" disabled selected>اختر السؤال</option>
+              {% for question in questions %}
+              <option value="{{ question.id }}">{{ question.text }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div id="question-report" class="mt-4">
+            <!-- هنا سيظهر الجدول -->
+            <p class="text-center text-muted">يرجى اختيار سؤال لعرض التقرير.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init(); // تفعيل مكتبة AOS
+
+  const questionSelect = document.getElementById("question-select");
+  const reportContainer = document.getElementById("question-report");
+
+  questionSelect.addEventListener("change", function () {
+    const questionId = this.value;
+
+    if (questionId) {
+      fetch("", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}", // حماية CSRF
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `question_id=${questionId}`,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // بناء الجدول ديناميكيًا
+          if (data.answers.length > 0) {
+            let tableHTML = `
+              <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                  <tr>
+                    <th>الإجابة</th>
+                    <th>الجهة</th>
+                    <th>اسم الاستبيان</th>
+                    <th>ملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+
+            data.answers.forEach((answer) => {
+              tableHTML += `
+                <tr>
+                  <td>${answer.answer}</td>
+                  <td>${answer.entity}</td>
+                  <td>${answer.survey}</td>
+                  <td>${answer.note}</td>
+                
+                </tr>
+              `;
+            });
+
+            tableHTML += `
+                </tbody>
+              </table>
+            `;
+            reportContainer.innerHTML = tableHTML;
+          } else {
+            reportContainer.innerHTML = "<p class='text-center text-muted'>لا توجد إجابات لهذا السؤال.</p>";
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          reportContainer.innerHTML = "<p class='text-center text-danger'>حدث خطأ أثناء جلب البيانات.</p>";
+        });
+    }
+  });
+</script>
+<style>
+    .card-header {
+      background-color: #4B6286;
+    }
+    .btn-primary {
+      background-color: #4B6286;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #4b6282;
+    }
+    .form-select {
+      font-size: 1rem;
+    }
+  </style>
+{% endblock %}

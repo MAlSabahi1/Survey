@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <h2 class="text-center mb-4">Log In</h2>
+            <form method="post" class="card p-4 shadow-sm">
+                {% csrf_token %}
+                
+                <!-- Render the form with Bootstrap styling -->
+                <div class="form-group mb-3">
+                    {{ form.as_p }}
+                </div>
+                
+                <!-- Submit button with Bootstrap styling -->
+                <button type="submit" class="btn btn-primary w-100">Log In</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

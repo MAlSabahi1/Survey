@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Time Trend Report{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-end">تقرير الاتجاهات الزمنية</h2>
+    <h3 class="mt-4">تقرير: {{ survey.title }}</h3>
+
+    {% if trend_over_time %}
+        <div class="table-responsive">
+            <table class="table table-bordered mt-4">
+                <thead class="table-light">
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>عدد الإجابات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date, count in trend_over_time.items %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">لا توجد بيانات متاحة للاتجاهات الزمنية لهذا الاستبيان.</p>
+    {% endif %}
+</div>
+{% endblock %}

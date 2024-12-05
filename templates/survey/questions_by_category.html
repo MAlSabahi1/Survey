@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}الأسئلة - {{ category }}{% endblock%}
+
+{% block content %}
+<div class="container" dir="rtl">
+  <!-- Title Section -->
+  <div
+    class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4"
+  >
+    <h3
+      class="text-center mb-0"
+      style="color: #2c3e50; font-weight: bold; letter-spacing: 0.05em"
+    >
+      <i class="fa-regular fa-circle-question"></i>
+      الأسئلة لتصنيف {{ category }}
+    </h3>
+  </div>
+
+  <!-- Survey Form -->
+  <form method="post" action="{% url 'submit_survey' category entity_id %}" id="surveyForm">
+    {% csrf_token %}
+    <!-- حقل إدخال اسم الاستبيان -->
+    <div class="mb-3">
+      <label for="survey_name" class="form-label" style="font-size: 1.1rem; color: #34495e; font-weight: bold">اسم الاستبيان</label>
+      <input
+        type="text"
+        name="survey_name"
+        id="survey_name"
+        class="form-control p-3 border-1 shadow-sm rounded-3"
+        placeholder="أدخل اسم الاستبيان"
+        style="background-color: #f9f9f9; border: 1px solid #ddd"
+        required
+      />
+    </div>
+    <div class="row g-4">
+      {% for question in questions %}
+      <input type="hidden" name="entity_id" value="{{ entity.id }}" />
+
+      <!-- Question Card -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <!-- Question Label -->
+      <!-- Question Label -->
+      <h5
+        class="card-title mb-3"
+        style="font-size: 1.1rem; color: #34495e; font-weight: bold"
+      >
+        {{ forloop.counter }}. {{ question.text }}
+      </h5>
+
+            <!-- Text Field -->
+            {% if question.question_type == 'text' %}
+            <input
+              type="text"
+              name="question_{{ question.id }}"
+              id="question_{{ question.id }}"
+              class="form-control p-3 border-1 shadow-sm rounded-3"
+              placeholder="أدخل إجابتك هنا"
+              style="background-color: #f9f9f9; border: 1px solid #ddd"
+            />
+
+            <!-- Field for Yes/No Answer (Radio Buttons) -->
+            {% elif question.question_type == 'yes_no' %}
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="question_{{ question.id }}"
+                id="yes_{{ question.id }}"
+                value="yes"
+                style="transform: scale(1.2)"
+              />
+              <label
+                class="form-check-label"
+                for="yes_{{ question.id }}"
+                style="font-size: 1rem; color: #2c3e50"
+                >نعم</label
+              >
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="question_{{ question.id }}"
+                id="no_{{ question.id }}"
+                value="no"
+                style="transform: scale(1.2)"
+              />
+              <label
+                class="form-check-label"
+                for="no_{{ question.id }}"
+                style="font-size: 1rem; color: #2c3e50"
+                >لا</label
+              >
+            </div>
+
+            <!-- Multiple Choice / Radio Buttons -->
+            {% elif question.question_type == 'multiple_choice' %}
+            <div class="mt-3">
+              {% for choice in question.choices.all %}
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="question_{{ question.id }}"
+                  value="{{ choice.id }}"
+                  id="choice_{{ choice.id }}"
+                />
+                <label class="form-check-label" for="choice_{{ choice.id }}">
+                  {{ choice.text }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            {% elif question.question_type == 'radio' %}
+            <div class="mt-3">
+              {% for choice in question.choices.all %}
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="question_{{ question.id }}"
+                  value="{{ choice.id }}"
+                  id="choice_{{ choice.id }}"
+                />
+                <label class="form-check-label" for="choice_{{ choice.id }}">
+                  {{ choice.text }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Notes Field -->
+            <div class="mt-3">
+              <!-- زر إضافة ملاحظة -->
+              <button
+                type="button"
+                class="btn btn-outline-primary toggle-note-btn"
+                data-target="#note_{{ question.id }}"
+                style="font-size: 0.9rem; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: all 0.3s ease; padding: 10px 20px; background-color: #fff; border: 2px solid #3498db; color: #3498db;"
+              >
+                <i class="fa fa-plus" style="margin-right: 5px;"></i> إضافة ملاحظة
+              </button>
+            
+              <!-- حقل الملاحظة -->
+              <textarea
+                rows="1"
+                name="note_{{ question.id }}"
+                id="note_{{ question.id }}"
+                class="form-control p-3 border-1 shadow-sm rounded-3 mt-3"
+                placeholder="أدخل ملاحظاتك هنا (اختياري)"
+                style="background-color: #f9f9f9; border: 1px solid #ddd; display: none; transition: all 0.3s ease;"
+              ></textarea>
+            </div>
+            
+            
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center mt-5">
+      <button
+        type="submit"
+        class="btn btn-primary btn-lg px-5 py-3"
+        style="
+          border-radius: 50px;
+          background-color: #3498db;
+          border: none;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+          transition: transform 0.2s;
+        "
+      >
+        إرسال الإجابات
+      </button>
+    </div>
+  </form>
+</div>
+
+
+<!-- SweetAlert2 and Toastr -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" />
+<script>
+  document.getElementById('surveyForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // منع الإرسال الفوري للنموذج
+
+    // تأكيد الحفظ عبر SweetAlert2
+    Swal.fire({
+      title: 'هل أنت متأكد؟',
+      text: 'هل ترغب في حفظ الاستبيان؟',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'نعم، حفظ الاستبيان!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // إذا تم تأكيد الحفظ، عرض رسالة "تم الحفظ" مع timer لجعلها تختفي بعد 5 ثواني
+        Swal.fire({
+          title: 'تم الحفظ!',
+          text: 'تم حفظ الاستبيان بنجاح.',
+          icon: 'success',
+          timer: 5000, // الرسالة ستختفي بعد 5 ثواني
+          showConfirmButton: false, // لا تظهر زر تأكيد
+        });
+
+        // إرسال النموذج بعد تأخير مناسب لضمان بقاء الرسالة لمدة 5 ثواني
+        setTimeout(() => {
+          this.submit(); // إرسال النموذج بعد 5 ثواني
+        }, 1000); // تأخير 5 ثواني قبل إرسال النموذج
+
+        // عرض رسالة Toastr بعد الحفظ
+        toastr.success('تم حفظ الاستبيان بنجاح!');
+      }
+    });
+  });
+</script>
+
+
+   <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form"); // استهداف النموذج
+            const inputs = form.querySelectorAll("input[name^='question_']"); // استهداف الأسئلة
+          
+            // استرجاع الإجابات المحفوظة عند تحميل الصفحة
+            inputs.forEach((input) => {
+              const savedValue = localStorage.getItem(input.name);
+          
+              if (savedValue) {
+                if (input.type === "radio" || input.type === "checkbox") {
+                  if (input.value === savedValue) {
+                    input.checked = true; // استرجاع الخيار المحدد
+                  }
+                } else {
+                  input.value = savedValue; // استرجاع النصوص
+                }
+              }
+          
+              // حفظ الإجابة عند أي تغيير
+              input.addEventListener("input", () => {
+                if (input.type === "radio" || input.type === "checkbox") {
+                  if (input.checked) {
+                    localStorage.setItem(input.name, input.value);
+                  }
+                } else {
+                  localStorage.setItem(input.name, input.value);
+                }
+              });
+            });
+          
+            // تنظيف البيانات عند مغادرة الصفحة
+            window.addEventListener("beforeunload", function () {
+              // هنا يمكنك تحديد شرط لتنظيف البيانات (مثلاً عند الإرسال)
+              if (form.dataset.clearStorage === "true") {
+                localStorage.clear();
+              }
+            });
+          
+            // تنظيف البيانات عند إرسال النموذج
+            form.addEventListener("submit", function () {
+              localStorage.clear();
+              form.dataset.clearStorage = "true";
+            });
+          });
+          
+      </script>
+
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const toggleButtons = document.querySelectorAll(".toggle-note-btn");
+      
+          toggleButtons.forEach((button) => {
+            button.addEventListener("click", function () {
+              const targetId = this.getAttribute("data-target");
+              const noteField = document.querySelector(targetId);
+      
+              if (noteField.style.display === "none" || !noteField.style.display) {
+                // إظهار حقل الملاحظات
+                noteField.style.display = "block";
+                this.innerHTML = '<i class="fa fa-minus"></i> إغلاق الملاحظة';
+              } else {
+                // إخفاء حقل الملاحظات
+                noteField.style.display = "none";
+                this.innerHTML = '<i class="fa fa-plus"></i> إضافة ملاحظة';
+              }
+            });
+          });
+        });
+      </script>      
+ 
+
+<style>
+  /* Title styling */
+  h3 {
+    color: #fff !important;
+  }
+
+  /* Card styling */
+  .card {
+    background-color: #fff;
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out;
+    border: none;
+  }
+
+  .card-header {
+    background-color: #4b6282;
+    color: white;
+    padding: 15px 20px;
+  }
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-title {
+    color: #34495e;
+    font-weight: 600;
+  }
+
+  /* Form input styling */
+  .form-control,
+  .form-select {
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+    background-color: #fff;
+  }
+
+  /* Button hover effect */
+  button:hover {
+    transform: scale(1.05);
+    background-color: #2980b9;
+  }
+
+  /* Form check styling */
+  .form-check-input {
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+  }
+
+  .form-check-input:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+
+  /* Submit button hover */
+  button {
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 2rem;
+    }
+
+    .btn {
+      font-size: 1rem;
+    }
+
+    .card {
+      margin-bottom: 20px;
+    }
+  }
+
+  .form-check .form-check-input {
+    float: right !important ;
+    margin-right: -1.7em !important;
+  }
+  .form-check {
+    padding-right: 1.7em;
+  }
+  .form-check-input {
+    width: 1.2em !important;
+    height: 1.2em !important;
+  }
+</style>
+{% endblock %}

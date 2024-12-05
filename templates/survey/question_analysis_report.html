@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Question-Level Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-end">تحليل الأسئلة لاستبيان: {{ survey.title }}</h2>
+    
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-end">السؤال</th>
+                    <th class="text-end">الإجابات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question, answer in answers_by_question.items %}
+                    <tr>
+                        <td class="fw-bold">{{ question }}</td>
+                        <td>
+                            {% if answer.choices %}
+                                <!-- Display multiple choice answers -->
+                                <ul class="list-unstyled mb-0">
+                                    {% for choice in answer.choices %}
+                                        <li>✔️ {{ choice }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% elif answer.text_answer %}
+                                <!-- Display text answer -->
+                                <span class="badge bg-primary">{{ answer.text_answer }}</span>
+                            {% elif answer.yes_no_answer %}
+                                <!-- Display yes/no answer with badges for styling -->
+                                {% if answer.yes_no_answer == "yes" %}
+                                    <span class="badge bg-success">نعم</span>
+                                {% else %}
+                                    <span class="badge bg-danger">لا</span>
+                                {% endif %}
+                            {% else %}
+                                <!-- Fallback if answer is empty or unknown type -->
+                                <span class="text-muted">لا توجد إجابة</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

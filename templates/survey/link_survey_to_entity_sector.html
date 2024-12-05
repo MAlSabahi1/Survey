@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %}Link Survey to Entities and Sectors{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h2 class="mb-0">Link {{ survey.title }} to Entities and Sectors</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                
+                <!-- Select Entities -->
+                <div class="mb-4">
+                    <label class="form-label h5">Select Entities</label>
+                    <div class="border p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                        {% for entity in form.fields.entities.queryset %}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="entity-{{ entity.id }}" name="entities" value="{{ entity.id }}"
+                                    {% if entity in form.instance.entities.all %}checked{% endif %}>
+                                <label for="entity-{{ entity.id }}" class="form-check-label">{{ entity.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small class="form-text text-muted">Select one or more entities for this survey.</small>
+                </div>
+
+                <!-- Select Sectors -->
+                <div class="mb-4">
+                    <label class="form-label h5">Select Sectors</label>
+                    <div class="border p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                        {% for sector in form.fields.sectors.queryset %}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="sector-{{ sector.id }}" name="sectors" value="{{ sector.id }}"
+                                    {% if sector in form.instance.sectors.all %}checked{% endif %}>
+                                <label for="sector-{{ sector.id }}" class="form-check-label">{{ sector.name }} <span class="text-muted">({{ sector.entity.name }})</span></label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small class="form-text text-muted">Select one or more sectors for this survey. (Sectors are shown with their parent entity name.)</small>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-4">Link Survey</button>
+                    <a href="{% url 'survey_list' %}" class="btn btn-outline-secondary ms-3 px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

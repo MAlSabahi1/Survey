@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}استبيان ديناميكي{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5">استبيان ديناميكي</h2>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="mb-4 d-flex align-items-center">
+        <div class="me-2 flex-grow-1">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">تطبيق الفلترة</button>
+    </form>
+
+    {% if keyword %}
+        <p class="text-muted"><strong>تطبيق الفلترة:</strong> "{{ keyword }}"</p>
+    {% endif %}
+
+    {% for data in report_data %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title">{{ data.question_text }}</h4>
+                <p class="card-subtitle mb-3 text-muted"><strong>النوع:</strong> {{ data.question_type }}</p>
+
+                {% if data.question_type == 'yes_no' %}
+                    <div class="d-flex justify-content-between">
+                        <p class="mb-0"><strong>الاجابة بنعم:</strong> {{ data.yes_count }}</p>
+                        <p class="mb-0"><strong>الاجابة بلا:</strong> {{ data.no_count }}</p>
+                    </div>
+
+                {% elif data.question_type == 'multiple_choice' %}
+                    <h5 class="mt-4">الاختيار الاكثر شيوعا</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for choice, count in data.most_common_choices %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>{{ choice }}</span>
+                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <h5>كل الخيارات</h5>
+                    <ul class="list-group list-group-flush">
+                        {% if data.choices_usage %}
+                            {% for choice, count in data.choices_usage.items %}
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>{{ choice }}</span>
+                                    <span class="badge bg-secondary rounded-pill">{{ count }}</span>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-muted">No choices recorded</li>
+                        {% endif %}
+                    </ul>
+
+                {% elif data.question_type == 'text' %}
+                    <h5 class="mt-4">الاجابة النصية</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for response in data.text_responses %}
+                            <li class="list-group-item">{{ response }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!-- confirm_delete.html -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-warning">
+        <h4>Are you sure you want to delete the survey "{{ survey.title }}"?</h4>
+        {% if linked_entities or linked_sectors %}
+            <p>This survey is connected to the following:</p>
+            <ul>
+                {% if linked_entities %}
+                    <li>Linked Entities</li>
+                {% endif %}
+                {% if linked_sectors %}
+                    <li>Linked Sectors</li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <form method="post" action="{% url 'delete_survey' survey.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+        <a href="{% url 'survey_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

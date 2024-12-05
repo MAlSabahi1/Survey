@@ -1,0 +1,32 @@
+<!-- templates/survey/demographic_report.html -->
+{% extends "base.html" %}
+
+{% block title %}Demographic Report{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Demographic Breakdown for {{ survey.title }}</h2>
+
+    {% if age_breakdown %}
+        <h3>Age Breakdown</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Age Group</th>
+                    <th>Number of Responses</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for age, count in age_breakdown.items %}
+                    <tr>
+                        <td>{{ age }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No age data available for this survey.</p>
+    {% endif %}
+</div>
+{% endblock %}
