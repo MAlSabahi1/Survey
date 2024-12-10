@@ -40,6 +40,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "accounts.middleware.NoCacheMiddleware", 
+
 ]
 
 ROOT_URLCONF = "django_project.urls"
@@ -117,7 +119,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "survey_list"  # new
+LOGIN_REDIRECT_URL = "/"  # new
 LOGOUT_REDIRECT_URL = "login"  # new
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

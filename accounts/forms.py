@@ -28,7 +28,6 @@ class UserForm(forms.ModelForm):
     )
     entities = forms.ModelMultipleChoiceField(
         queryset=Entitys.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
         required=False,
         label="الكيانات المسموحة"
     )

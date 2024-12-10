@@ -1,24 +1,221 @@
 {% extends "base.html" %}
-
+{% load custom_filters %}
+{% load static %} 
 {% block title %}Login{% endblock %}
-
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <h2 class="text-center mb-4">Log In</h2>
-            <form method="post" class="card p-4 shadow-sm">
-                {% csrf_token %}
-                
-                <!-- Render the form with Bootstrap styling -->
-                <div class="form-group mb-3">
-                    {{ form.as_p }}
-                </div>
-                
-                <!-- Submit button with Bootstrap styling -->
-                <button type="submit" class="btn btn-primary w-100">Log In</button>
-            </form>
+<div class="wrapper">
+  <div class="container main">
+    <div class="row">
+      <!-- نموذج تسجيل الدخول -->
+      <div class="col-md-6 right">
+        <div class="input-box">
+          <header>تسجيل الدخول</header>
+          <form method="post">
+            {% csrf_token %}
+            <div class="input-field">
+              {{ form.username|add_class:"input" }}
+              <label for="id_username">اسم المستخدم</label>
+            </div>
+            <div class="input-field">
+              {{ form.password|add_class:"input" }}
+              <label for="id_password">كلمة المرور</label>
+            </div>
+            <div class="input-field">
+              <input type="submit" class="submit" value="تسجيل الدخول" placeholder="تسجيل الدخول" />
+            </div>
+          </form>
+          {% comment %} <div class="signin">
+            <span>Don't have an account? <a href="#">Sign up here</a></span>
+          </div> {% endcomment %}
         </div>
+      </div>
+      <!-- صورة الجانب الأيسر -->
+      <div class="col-md-6 side-image">
+        <div class="text">
+          <p>مرحبًا بكم في نظام الاستبيانات! الرجاء تسجيل الدخول للوصول إلى حسابك.</p>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
+
+<style>
+  .content {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* الحاوية الأساسية */
+  .wrapper {
+    background: #ececec;
+    padding: 0 20px;
+    width: 100%;
+  }
+
+  .main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .row {
+    width: 900px;
+    height: 550px;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0px;
+    box-shadow: 5px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  }
+
+  /* جانب الصورة */
+  .side-image {
+    background-image: url("{% static 'images/2.jpg' %}");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 10px 0 0 10px;
+    position: relative;
+  }
+
+  .side-image img {
+    width: 35px;
+    position: absolute;
+    top: 30px;
+    left: 30px;
+  }
+
+  .text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .text p {
+    color: #fff;
+    font-size: 20px;
+  }
+
+  .text i {
+    font-weight: 400;
+    font-size: 15px;
+  }
+
+  /* القسم الأيمن */
+  .right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .input-box {
+    width: 330px;
+    box-sizing: border-box;
+  }
+
+  .input-box header {
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 45px;
+  }
+
+  .input-field {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 0 10px;
+  }
+
+  .input {
+    height: 45px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    outline: none;
+    margin-bottom: 20px;
+    color: #40414a;
+  }
+
+  .input-field label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    pointer-events: none;
+    transition: 0.5s;
+  }
+
+  .input:focus ~ label {
+    top: -10px;
+    font-size: 13px;
+  }
+
+  .input:valid ~ label {
+    top: -10px;
+    font-size: 13px;
+    color: #5d5076;
+  }
+
+  .input:focus,
+  .input:valid {
+    border-bottom: 1px solid #743ae1;
+  }
+
+  .submit {
+    border: none;
+    outline: none;
+    height: 45px;
+    background: #ececec;
+    border-radius: 5px;
+    transition: 0.4s;
+  }
+
+  .submit:hover {
+    background: rgba(37, 95, 156, 0.937);
+    color: #fff;
+  }
+
+  .signin {
+    text-align: center;
+    font-size: small;
+    margin-top: 25px;
+  }
+
+  span a {
+    text-decoration: none;
+    font-weight: 700;
+    color: #000;
+    transition: 0.5s;
+  }
+
+  span a:hover {
+    text-decoration: underline;
+    color: #000;
+  }
+
+  /* تحسين التوافق مع الشاشات الصغيرة */
+  @media only screen and (max-width: 768px) {
+    .side-image {
+      border-radius: 10px 10px 0 0;
+    }
+
+    .side-image img {
+      top: 20px;
+      left: 47%;
+    }
+
+    .text {
+      top: 70%;
+      text-align: center;
+    }
+
+    .row {
+      max-width: 420px;
+      width: 100%;
+    }
+  }
+</style>
 {% endblock %}

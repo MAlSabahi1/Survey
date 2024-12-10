@@ -36,7 +36,7 @@ class Question(models.Model):
     
     text = models.CharField(max_length=200)
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)
-    category = models.CharField(max_length=50, choices=CATEGORIES, default='staff')
+    category = models.CharField(max_length=50, choices=CATEGORIES, default='systems')
     is_active = models.BooleanField(default=True)  # حقل نشط
 
 

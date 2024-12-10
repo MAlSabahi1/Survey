@@ -5,19 +5,19 @@
 {% block title %}إنشاء كيان{% endblock %}
 
 {% block content %}
-<div class="container" dir="rtl">
+<div class="container-fluid px-lg-5">
   <div class="row justify-content-center">
-    <div class="col-lg-12 col-md-9 col-12">
+    <div class="col-lg-12 col-md-12 col-12">
       <div
-        class="card border-0 rounded-4 animate__animated animate__fadeInUp"
+        class="card border-0 rounded-4 animate__animated animate__fadeInUp shadow-sm"
         data-aos="fade-up"
       >
         <div
-          class="card-header bg-gradient text-white text-center rounded-top py-4"
+          class="card-header text-white text-center rounded-top py-4"
         >
           <h3 class="mb-0"><i class="fas fa-poll-h"></i> إنشاء كيان جديد</h3>
         </div>
-        <div class="card-body p-5">
+        <div class="card-body p-4 p-md-5">
           <form method="post" id="entityForm">
             {% csrf_token %}
             
@@ -38,7 +38,7 @@
                 type="submit"
                 class="btn btn-primary btn-lg px-5 py-3 rounded-3 shadow-sm hover-shadow"
               >
-                <i class="fas fa-check-circle"></i> إنشاء الكيان
+              <i class="fa-solid fa-plus"></i> إنشاء الكيان
               </button>
             </div>
           </form>
@@ -48,9 +48,6 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
 <script>
   // تفعيل مكتبة AOS للحركة عند التمرير
@@ -102,78 +99,5 @@
   }
 </script>
 
-<style>
-  /* تأثير الظل عند التمرير */
-  .hover-shadow:hover {
-    box-shadow: 0 12px 24px rgba(0, 123, 255, 0.3);
-    transition: all 0.3s ease-in-out;
-  }
-
-  /* التأثيرات الخاصة بالأزرار */
-  .btn-primary {
-    transition: all 0.3s ease;
-  }
-
-  .btn-primary:hover {
-    background-color: #004085;
-    border-color: #003366;
-  }
-
-  .card {
-    border-radius: 16px;
-  }
-
-  .card-header {
-    border-radius: 16px 16px 0 0;
-    background-color:#4b6282;
-  }
-
-  .card-body {
-    transition: all 0.3s ease;
-  }
-
-  .btn-primary:focus,
-  .btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0, 123, 255, 0.4);
-  }
-
-  .form-label {
-    font-size: 1.1rem;
-  }
-
-  .form-control {
-    font-size: 1rem;
-    padding: 0.8rem;
-  }
-
-  .btn-primary {
-    padding: 0.8rem 3rem;
-    font-size: 1.2rem;
-    ba
-    background-color:#5E84AB;
-  }
-
-  .card-body {
-    padding: 2.5rem;
-  }
-
-  @media (max-width: 576px) {
-    .btn-primary {
-      padding: 0.7rem 2.5rem;
-    }
-
-    .form-label,
-    .form-control {
-      font-size: 1rem;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .col-lg-7 {
-      max-width: 650px;
-    }
-  }
-</style>
 
 {% endblock %}

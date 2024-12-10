@@ -4,8 +4,8 @@
 {% block content %}
 <div class="container" dir="rtl">
   <!-- Title Section -->
-  <div class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4">
-    <h3 class="text-center mb-0" style="color: #2c3e50; font-weight: bold; letter-spacing: 0.05em">
+  <div class="card-header text-white text-center rounded-top py-4 mb-4">
+    <h3 class="text-center mb-0" >
       <i class="fa-regular fa-circle-question"></i> تعديل الاستبيان
     </h3>
   </div>
@@ -14,7 +14,7 @@
   <form method="post" id="survey-form">
     {% csrf_token %}
     <div class="row g-4">
-      <div class="col-9 form-group mb-4">
+      <div class="form-group mb-4">
         <label for="survey-title" class="form-label" style="font-size: 1.1rem; font-weight: bold; color: #34495e;">اسم الاستبيان</label>
         <input
           type="text"
@@ -24,14 +24,6 @@
           class="form-control p-3 border-1 shadow-sm rounded-3"
           placeholder="أدخل اسم الاستبيان هنا"
         />
-      </div>
-      <div class="col-3 d-flex flex-column justify-content-between text-center mt-5">
-        <button id="print-button" type="button" class="btn btn-secondary px-4 py-2" style="background-color: #2c3e50; border: none; border-radius: 5px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
-          <i class="fa-solid fa-print"></i> طباعة التقرير
-        </button>
-        <button type="submit" class="btn btn-secondary px-4 py-2" style="background-color: #2c3e50; border: none; border-radius: 5px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
-          حفظ التعديلات
-        </button>
       </div>
       {% for question in questions %}
       <div class="col-md-6">
@@ -103,7 +95,7 @@
 
     <!-- Submit Button -->
     <div class="text-center mt-5">
-      <button type="submit" class="btn btn-primary btn-lg px-5 py-3" style="background-color: #3498db; border: none; border-radius: 50px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);">
+      <button type="submit" class="btn btn-primary btn-lg px-5 py-3" >
         حفظ التعديلات
       </button>
     </div>
@@ -154,107 +146,6 @@
     });
   });
 </script>
-
-
-<style>
-  /* Title styling */
-  h3 {
-    color: #fff !important;
-  }
-
-  /* Card styling */
-  .card {
-    background-color: #fff;
-    border-radius: 15px;
-    transition: transform 0.2s ease-in-out;
-    border: none;
-  }
-
-  .card-header {
-    background-color: #4b6282;
-    color: white;
-    padding: 15px 20px;
-  }
-  .card:hover {
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  }
-
-  .card-title {
-    color: #34495e;
-    font-weight: 600;
-  }
-
-  /* Form input styling */
-  .form-control,
-  .form-select {
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  }
-
-  .form-control:focus,
-  .form-select:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
-    background-color: #fff;
-  }
-
-  /* Button hover effect */
-  button:hover {
-    transform: scale(1.05);
-    background-color: #2980b9;
-  }
-
-  /* Form check styling */
-  .form-check-input {
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-  }
-
-  .form-check-input:checked {
-    background-color: #3498db;
-    border-color: #3498db;
-  }
-
-  /* Submit button hover */
-  button {
-    transition: all 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #2980b9;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    h2 {
-      font-size: 2rem;
-    }
-
-    .btn {
-      font-size: 1rem;
-    }
-
-    .card {
-      margin-bottom: 20px;
-    }
-  }
-
-  .form-check .form-check-input {
-    float: right !important ;
-    margin-right: -1.7em !important;
-  }
-  .form-check {
-    padding-right: 1.7em;
-  }
-  .form-check-input {
-    width: 1.2em !important;
-    height: 1.2em !important;
-  }
-  @media print {
-    /* إخفاء أزرار الطباعة والحفظ أثناء الطباعة */
-    #print-button, button[type="submit"] {
-      display: none !important;
-    }
-</style>
 
 <script>
   // Show the toast notification after form submission

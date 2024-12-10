@@ -6,6 +6,7 @@ from django.contrib.auth.models import User, Group
 from .forms import *
 from django.contrib.auth.decorators import login_required, user_passes_test
 from survey.models import *
+from django.contrib.auth import logout, login
 
 
 class SignUpView(generic.CreateView):
@@ -14,6 +15,13 @@ class SignUpView(generic.CreateView):
     template_name = "registration/signup.html"
 
 
+def logout_view(request):
+    # تسجيل الخروج
+    logout(request)
+    # تنظيف الجلسة بشكل كامل
+    request.session.flush()
+    # إعادة التوجيه إلى صفحة تسجيل الدخول
+    return redirect('login')
 
 
 def is_admin(user):

@@ -14,6 +14,8 @@ from django.http import HttpResponseRedirect
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from .utils import encode_id, decode_id
+from django.views.decorators.cache import cache_control
+
 
 
 @login_required
@@ -34,7 +36,7 @@ def create_entitys(request):
     return render(request, 'survey/create_entitys.html', {'form': form, 'entities': entities})
 
 
-
+@login_required
 def show_categories(request, pk):
     # فك تشفير pk
     entity_id = decode_id(pk)
@@ -54,7 +56,7 @@ def show_categories(request, pk):
         'systems_surveys': systems_surveys,
     })
 
-
+@login_required
 def show_questions_by_category(request, category, pk):
     # فك تشفير pk
     entity_id = decode_id(pk)
@@ -152,7 +154,7 @@ def delete_survey(request, survey_id, entity_id):
     # إعادة التوجيه إلى صفحة عرض التصنيفات
     return redirect('categories', entity_id)
 
-
+@login_required
 def show_survey(request, survey_id):
     survey = get_object_or_404(Surveys, id=survey_id)
     answers = Answer.objects.filter(survey=survey)
@@ -177,7 +179,7 @@ def show_survey(request, survey_id):
 def is_admin(user):
     return user.is_authenticated and user.is_staff
 
-
+@login_required
 def filter_questions(keywords=None, question_types=None):
     query = Q()
 
@@ -330,7 +332,7 @@ def question_report(request):
         }
         return JsonResponse(data)
 
-
+@login_required
 def answer_report(request):
     if request.method == "GET":
         # جلب الأسئلة من الأنواع المحددة فقط
@@ -362,6 +364,8 @@ def answer_report(request):
         }
         return JsonResponse(data)
 
+
+@login_required
 def get_choices(request, question_id):
     question = get_object_or_404(Question, id=question_id, question_type__in=["multiple_choice", "radio"])
     choices = Choice.objects.filter(question=question)
@@ -371,7 +375,7 @@ def get_choices(request, question_id):
     })
 
 
-
+@login_required
 def edit_survey(request, survey_id):
     # الحصول على الاستبيان
     survey = get_object_or_404(Surveys, id=survey_id)
@@ -445,13 +449,15 @@ def edit_survey(request, survey_id):
 
 
 
-
+@login_required
 def entity_list(request):
     entities = Entitys.objects.all()
     # parents = Entitys.objects.filter(parent) 
     parents = Entitys.objects.filter(parent__isnull=True) # اختيار الكيانات التي يمكن أن تكون "أب"
     return render(request, 'survey/entities_list.html', {'entities': entities, 'parents': parents})
 
+
+@login_required
 @csrf_exempt
 def update_entity(request, entity_id):
     if request.method == "POST":
@@ -473,7 +479,7 @@ def update_entity(request, entity_id):
         return JsonResponse({'success': True, 'message': 'تم تحديث الكيان بنجاح!'})
     return JsonResponse({'success': False, 'message': 'طلب غير صالح'})
 
-
+@login_required
 @csrf_exempt
 def delete_entity(request, entity_id):
     if request.method == "POST":
@@ -481,431 +487,6 @@ def delete_entity(request, entity_id):
         entity.delete()
         return JsonResponse({'success': True, 'message': 'تم حذف الكيان بنجاح!'})
     return JsonResponse({'success': False, 'message': 'طلب غير صالح'})  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# =---------------------------------------------------------------------------------------------
-
-
-@login_required
-@user_passes_test(is_admin)
-def get_questions(request):
-    return render(request, 'survey/question_category.html')
-
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def survey_list(request):
-    surveys = Surveys.objects.all()
-    return render(request, 'survey/survey_list.html', {'surveys': surveys})
-
-def thank_you(request):
-    return render(request, 'survey/thank_you.html')
-
-@login_required
-@user_passes_test(is_admin)
-def view_survey_answers(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    entity_responses = SurveyEntityResponse.objects.filter(survey=survey)
-    entity_answers = {}
-
-    for response in entity_responses:
-        entity_id = response.entity.id
-        if entity_id not in entity_answers:
-            entity_answers[entity_id] = {
-                'entity': response.entity,
-                'answers': response.answers,
-                'sectors': {}
-            }
-        if response.sector:
-            entity_answers[entity_id]['sectors'][response.sector.id] = {
-                'sector': response.sector,
-                'answers': response.answers
-            }
-
-    if request.method == 'POST':
-        # Save the answers
-        for entity_id, entity_data in entity_answers.items():
-            entity_answers_data = {}
-            for question in survey.questions.all():
-                answer_key = f"entity_{entity_id}_question_{question.id}"
-                text_answer = request.POST.get(answer_key, "")
-                entity_answers_data[question.text] = {'text_answer': text_answer}
-            SurveyEntityResponse.objects.update_or_create(
-                survey=survey,
-                entity=entity_data['entity'],
-                sector=None,
-                user=request.user,
-                defaults={'answers': entity_answers_data}
-            )
-
-        # For sectors
-        for entity_id, entity_data in entity_answers.items():
-            for sector_id, sector_data in entity_data['sectors'].items():
-                sector_answers_data = {}
-                for question in survey.questions.all():
-                    answer_key = f"sector_{sector_id}_question_{question.id}"
-                    text_answer = request.POST.get(answer_key, "")
-                    sector_answers_data[question.text] = {'text_answer': text_answer}
-                SurveyEntityResponse.objects.update_or_create(
-                    survey=survey,
-                    entity=entity_data['entity'],
-                    sector=sector_data['sector'],
-                    user=request.user,
-                    defaults={'answers': sector_answers_data}
-                )
-
-        messages.success(request, "Answers updated successfully.")
-        return redirect('view_survey_answers', survey_id=survey.id)
-
-    return render(request, 'survey/view_survey_answers.html', {
-        'survey': survey,
-        'entity_answers': entity_answers,
-    })
-@login_required
-@user_passes_test(is_admin)
-def choose_survey_for_answers(request):
-    surveys = Surveys.objects.all()
-    return render(request, 'survey/choose_survey_for_answers.html', {'surveys': surveys})
-
-
-
-# @login_required
-# @user_passes_test(is_admin)
-# def survey_report(request, survey_id):
-#     survey = get_object_or_404(Surveys, id=survey_id)
-#     answers_data = survey.json_answers  # Get the JSON answers data
-
-#     # Convert JSON answers to DataFrame for analysis
-#     df = pd.DataFrame([answers_data])
-
-#     # Generate basic summary statistics
-#     report_data = {}
-#     for question, responses in answers_data.items():
-#         if 'choices' in responses:  # Multiple choice question
-#             choices_df = pd.Series(responses['choices']).value_counts()
-#             report_data[question] = choices_df.to_dict()
-#         elif 'yes_no_answer' in responses:  # Yes/No question
-#             report_data[question] = {
-#                 'Yes': (responses['yes_no_answer'] == 'yes'),
-#                 'No': (responses['yes_no_answer'] == 'no')
-#             }
-#         else:  # Text responses
-#             report_data[question] = responses['text_answer']
-
-#     # Pass data to the template
-#     return render(request, 'survey/survey_report.html', {
-#         'survey': survey,
-#         'report_data': report_data
-#     })
-
-@login_required
-@user_passes_test(is_admin)
-def choose_survey_for_report(request):
-    surveys = Surveys.objects.all()
-    return render(request, 'survey/choose_survey_for_report.html', {'surveys': surveys})
-
-
-# @login_required
-# @user_passes_test(lambda u: u.is_staff)
-# def delete_survey(request, survey_id):
-#     survey = get_object_or_404(Surveys, id=survey_id)
-#     survey.delete()
-#     return redirect('survey_list')
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def survey_report(request, survey_id=None):
-    # Fetch all surveys to populate the dropdown
-    surveys = Surveys.objects.all()
-
-    # If a survey_id is provided, fetch that specific survey
-    selected_survey = None
-    if survey_id:
-        selected_survey = get_object_or_404(Surveys, id=survey_id)
-
-    return render(request, 'survey/survey_report.html', {
-        'surveys': surveys,
-        'selected_survey': selected_survey,
-    })
-
-
-
-# Utility function to check admin status
-def is_admin(user):
-    return user.is_authenticated and user.is_staff
-
-# 1. Surveys Summary Report
-@login_required
-@user_passes_test(is_admin)
-def survey_summary_report(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    response_data = survey.json_answers
-    total_responses = len(response_data)
-    question_types = Question.objects.filter(survey=survey).values('question_type').count()
-
-    return render(request, 'survey/summary_report.html', {
-        'survey': survey,
-        'total_responses': total_responses,
-        'question_types': question_types,
-    })
-
-# 2. Question-Level Analysis
-@login_required
-@user_passes_test(is_admin)
-def question_analysis_report(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    questions = survey.questions.all()
-    
-    # Assuming survey.json_answers is structured correctly as a dictionary with questions as keys
-    answers_by_question = {
-        question.text: survey.json_answers.get(question.text, "لا توجد إجابات") 
-        for question in questions
-    }
-
-    return render(request, 'survey/question_analysis_report.html', {
-        'survey': survey,
-        'questions': questions,
-        'answers_by_question': answers_by_question,
-    })
-
-# 3. Demographic Breakdown
-@login_required
-@user_passes_test(is_admin)
-def demographic_report(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    response_data = pd.DataFrame(survey.json_answers)
-    age_breakdown = response_data['age'].value_counts().to_dict() if 'age' in response_data.columns else {}
-
-    return render(request, 'survey/demographic_report.html', {
-        'survey': survey,
-        'age_breakdown': age_breakdown,
-    })
-
-# 4. Trends Over Time
-@login_required
-@user_passes_test(is_admin)
-def time_trend_report(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    response_data = pd.DataFrame(survey.json_answers)
-    
-    if 'response_date' in response_data.columns:
-        response_data['response_date'] = pd.to_datetime(response_data['response_date'])
-        trend_over_time = response_data.groupby(response_data['response_date'].dt.date).size().to_dict()
-    else:
-        trend_over_time = {}
-
-    return render(request, 'survey/time_trend_report.html', {
-        'survey': survey,
-        'trend_over_time': trend_over_time,
-    })
-
-# 5. Completion Analysis
-
-@login_required
-@user_passes_test(is_admin)
-def completion_analysis(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    
-    # Access the JSON data for this survey's answers
-    response_data = survey.json_answers
-
-    # Define total_responses as the number of answered questions (non-empty responses)
-    total_responses = sum(1 for answer in response_data.values() if any(answer.values()))
-
-    # Assume a response is complete if all required questions have non-empty answers
-    questions = survey.questions.all()
-    completed_responses = 1 if all(response_data.get(q.text) for q in questions) else 0
-
-    # Calculate completion rate
-    completion_rate = (completed_responses / len(questions)) * 100 if questions else 0
-
-    return render(request, 'survey/completion_analysis.html', {
-        'survey': survey,
-        'total_responses': total_responses,  # This now represents answered questions
-        'completion_rate': completion_rate,
-    })
-
-
-# 6. Satisfaction and Feedback Analysis
-@login_required
-@user_passes_test(is_admin)
-def satisfaction_report(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    response_data = survey.json_answers
-    satisfaction_scores = [resp['satisfaction'] for resp in response_data if 'satisfaction' in resp]
-    avg_satisfaction = sum(satisfaction_scores) / len(satisfaction_scores) if satisfaction_scores else 0
-
-    return render(request, 'survey/satisfaction_report.html', {
-        'survey': survey,
-        'avg_satisfaction': avg_satisfaction,
-    })
-
-# 7. Export Responses as CSV
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def export_survey_data(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    response_data = survey.json_answers
-
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{survey.title}_responses.csv"'
-    writer = csv.writer(response)
-
-    # Check if json_answers is a dictionary with question-answer pairs
-    if isinstance(response_data, dict):
-        # Write header
-        writer.writerow(['Question', 'Answer'])
-
-        # Write question-answer pairs
-        for question, answer in response_data.items():
-            if isinstance(answer, dict):
-                # Handle different answer types within the dictionary
-                if 'choices' in answer:
-                    writer.writerow([question, ', '.join(answer['choices'])])
-                elif 'text_answer' in answer:
-                    writer.writerow([question, answer['text_answer']])
-                elif 'yes_no_answer' in answer:
-                    writer.writerow([question, answer['yes_no_answer']])
-            else:
-                writer.writerow([question, answer])
-    else:
-        # Handle cases where response_data is not in the expected format
-        writer.writerow(['Error'])
-        writer.writerow(['Unexpected data format in json_answers'])
-
-    return response
-
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def dynamic_report(request):
-    surveys = Surveys.objects.all()
-    keyword = None
-    report_data = []  # Store question-by-question analysis here
-
-    # Process the filter form
-    if request.method == "GET":
-        form = ReportFilterForm(request.GET)
-        if form.is_valid():
-            keyword = form.cleaned_data['keyword'].lower()
-
-    # Iterate through surveys to analyze answers
-    for survey in surveys:
-        for question, answer_data in survey.json_answers.items():
-            # Filter questions based on the keyword
-            if keyword and keyword not in question.lower():
-                continue
-
-            question_analysis = {
-                'question_text': question,
-                'question_type': None,
-                'yes_count': 0,
-                'no_count': 0,
-                'most_common_choices': [],
-                'choices_usage': {},
-                'text_responses': []
-            }
-
-            # Determine the type of question and process responses
-            for question_obj in survey.questions.filter(text=question):
-                question_analysis['question_type'] = question_obj.question_type
-
-                if question_obj.question_type == 'yes_no':
-                    if answer_data.get("yes_no_answer") == "yes":
-                        question_analysis['yes_count'] += 1
-                    elif answer_data.get("yes_no_answer") == "no":
-                        question_analysis['no_count'] += 1
-
-                elif question_obj.question_type == 'multiple_choice' and 'choices' in answer_data:
-                    choices_counter = Counter(answer_data['choices'])
-                    question_analysis['choices_usage'] = dict(choices_counter)  # Ensure choices_usage is always a dictionary
-                    question_analysis['most_common_choices'] = choices_counter.most_common()
-
-                elif question_obj.question_type == 'text' and 'text_answer' in answer_data:
-                    question_analysis['text_responses'].append(answer_data['text_answer'])
-
-            report_data.append(question_analysis)
-
-    context = {
-        'form': form,
-        'surveys': surveys,
-        'keyword': keyword,
-        'report_data': report_data,
-    }
-
-    return render(request, 'survey/dynamic_report.html', context)
-
-
-
-@login_required
-def survey_summary(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-    survey_response, created = SurveyResponse.objects.get_or_create(survey=survey, user=request.user)
-
-    if request.method == 'POST':
-        summary_form = SurveySummaryForm(request.POST, instance=survey_response)
-        
-        question_forms = [
-            QuestionNoteForm(request.POST, prefix=str(q.id), instance=QuestionResponse.objects.get_or_create(response=survey_response, question=q)[0])
-            for q in survey.questions.all()
-        ]
-
-        if summary_form.is_valid() and all(form.is_valid() for form in question_forms):
-            summary_form.save()
-            for form in question_forms:
-                form.save()
-            return redirect('survey_list')  # Redirect to a survey list or confirmation page
-
-    else:
-        summary_form = SurveySummaryForm(instance=survey_response)
-        question_forms = [
-            QuestionNoteForm(prefix=str(q.id), instance=QuestionResponse.objects.get_or_create(response=survey_response, question=q)[0])
-            for q in survey.questions.all()
-        ]
-
-    context = {
-        'survey': survey,
-        'summary_form': summary_form,
-        'question_forms': question_forms,
-    }
-    return render(request, 'survey/survey_summary.html', context)
-
-
-# @login_required
-# @user_passes_test(lambda u: u.is_staff)
-# def create_entity(request):
-#     if request.method == 'POST':
-#         form = EntityForm(request.POST)
-#         if form.is_valid():
-#             entity = form.save()
-#             # استجابة JSON عند النجاح
-#             return JsonResponse({'success': True})
-#         else:
-#             # استجابة JSON عند وجود خطأ في النموذج
-#             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-
-#     else:
-#         form = EntityForm()
-#     return render(request, 'entity/create_entity.html', {'form': form})
-
-
-# @login_required
-# def entity_list(request):
-#     entities = Entity.objects.all()  # Retrieve all entities
-#     return render(request, 'entity/entity_list.html', {'entities': entities})  # Render a template for displaying entities
-
 
 
 
@@ -933,14 +514,6 @@ def create_sector(request):
     # إذا لم يكن الطلب من نوع POST أو غير AJAX
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
-
-
-
-def get_sectors(request):
-    entity_id = request.GET.get('entity_id')
-    sectors = Sector.objects.filter(entity_id=entity_id).values('id', 'name')
-    return JsonResponse({'sectors': list(sectors)})
 
 @login_required
 def home(request):
@@ -978,51 +551,7 @@ def home(request):
 
     return render(request, 'home.html', context)
 
-# @login_required
-# def home(request):
-#     user = request.user
-
-#     # Get the entities where the parent is None (top-level entities)
-#     entities_permissions = Entitys.objects.filter(parent=None, user_permissions__user=user)
-#     # Get the child entities (where parent is not None)
-#     child_permissions = Entitys.objects.filter(parent__isnull=False, user_permissions__user=user)
-
-#     # Add encoded_id for each entity for secure URL encoding
-#     for entity in entities_permissions:
-#         entity.encoded_id = encode_id(entity.id)  # Ensure this function is working correctly
-
-#     for entity in child_permissions:
-#         entity.encoded_id = encode_id(entity.id)  # Ensure this function is working correctly
-
-#     context = {
-#         'entities': entities_permissions,  # Top-level entities (parents)
-#         'child_permissions': child_permissions,  # Child entities (sectors)
-#     }
-
-#     return render(request, 'home.html', context)
 
 
-
-
-
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def update_survey_answers(request, survey_id):
-    survey = get_object_or_404(Surveys, id=survey_id)
-
-    if request.method == 'POST':
-        answers_data = request.POST.getlist('answers')
-        notes_data = request.POST.getlist('notes')
-
-        for response in SurveyEntityResponse.objects.filter(survey=survey):
-            entity_answers = answers_data.get(str(response.entity.id), {})
-            response.answers.update(entity_answers)
-            response.save()
-
-        messages.success(request, "تم تحديث الإجابات بنجاح.")
-        return redirect('view_survey_answers', survey_id=survey_id)
-
-    return redirect('view_survey_answers', survey_id=survey_id)
 
     
