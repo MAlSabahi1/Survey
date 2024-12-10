@@ -9,6 +9,8 @@
     --text-color: #ffffff;
     --box-shadow-color: rgba(0, 0, 0, 0.1);
     --label-color: #555;
+
+    
   }
 
   body {
@@ -32,6 +34,8 @@
     vertical-align: middle;
     text-align: center;
     padding: 12px;
+    border: 1px solid #dee2e6;
+    text-align: center;
   }
 
   .table-striped tbody tr:nth-of-type(odd) {
@@ -201,7 +205,7 @@
 }
 
 .sidebar-content {
-  height: calc(100% - 50px);
+  height: calc(100% - 100px);
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -627,7 +631,7 @@ a:focus {
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease-in-out;
   }
 
   .btn-primary:hover {
@@ -681,13 +685,6 @@ a:focus {
   .table-hover tbody tr:hover {
     background-color: #e9ecef;
     cursor: pointer;
-  }
-
-  .table th,
-  .table td {
-    border: 1px solid #dee2e6;
-    text-align: center;
-    padding: 12px;
   }
   
   .table thead th {

@@ -11,26 +11,20 @@
       </div>
       <div class="row mb-4 align-items-center">
         <!-- قسم البحث -->
-        <div class="col-lg-6 col-md-8 col-12 d-flex justify-content-start">
-          <div class="input-group">
-            <button
-              class="btn btn-primary"
-              style="border-radius: 0 0.375rem 0.375rem 0"
-            >
-              <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-            <input
-              type="text"
-              id="searchInput"
-              class="form-control"
-              placeholder="ابحث عن الكيان..."
-              oninput="filterTable()"
-              style="border-radius: 0.375rem 0 0 0.375rem"
-            />
-          </div>
+        <div class="col-12 col-md-6">
+          <label for="searchInput" class="form-label fw-bold">بحث:</label>
+          <input
+          type="text"
+          id="searchInput"
+          class="form-control"
+          placeholder="ابحث عن الكيان..."
+          oninput="filterTable()"
+          style="border-radius: 0.375rem 0 0 0.375rem"
+          />
         </div>
+
         <!-- زر لإضافة كيان جديد -->
-        <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2">
+        <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity">
           <a href="{% url 'create_entitys' %}" class="btn btn-primary btn-lg">
             <i class="fa-solid fa-plus"></i> إضافة كيان جديد
           </a>
@@ -160,6 +154,19 @@
     </div>
   </div>
 </div>
+
+<style>
+  @media (max-width:768px){
+    .row{
+      flex-direction: column-reverse;
+      gap:1.5rem;
+    }
+    .add-entity{
+      justify-content: center !important;
+      
+    }
+  }
+</style>
 
 <script>
   // الاحتفاظ بجميع وظائف JavaScript الأصلية

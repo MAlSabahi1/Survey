@@ -94,8 +94,8 @@
   }
 
   .text p {
-    color: #fff;
-    font-size: 20px;
+    color: #40414a;
+    font-weight: 300;
   }
 
   .text i {
@@ -120,6 +120,7 @@
     font-weight: 700;
     text-align: center;
     margin-bottom: 45px;
+    font-size: 1.5rem;
   }
 
   .input-field {
@@ -161,7 +162,7 @@
 
   .input:focus,
   .input:valid {
-    border-bottom: 1px solid #743ae1;
+    border-bottom: 1px solid rgba(37, 95, 156, 0.937);
   }
 
   .submit {
@@ -201,14 +202,16 @@
     .side-image {
       border-radius: 10px 10px 0 0;
     }
-
+    .right{
+        order:1;
+    }
     .side-image img {
       top: 20px;
       left: 47%;
     }
 
     .text {
-      top: 70%;
+      {% comment %} top: 70%; {% endcomment %}
       text-align: center;
     }
 

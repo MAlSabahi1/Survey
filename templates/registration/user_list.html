@@ -1,13 +1,13 @@
 {% extends "../base.html" %} {% block content %}
-<div class="container py-4" dir="rtl">
+<div class="container-fluid px-lg-4" dir="rtl">
   <div class="row">
     <!-- قسم التنقل -->
     <div class="col-lg-12 order-lg-1">
-      <div
-        class="card-header bg-gradient text-white text-center rounded-top py-4 mb-4"
-      >
+      <div class="card border-0 rounded-4">
+      <div class="card-header text-white text-center rounded-top py-4 mb-4">
         <h3 class="mb-0"><i class="fas fa-users"></i> قائمة المستخدمين</h3>
       </div>
+    </div>
       <!-- قسم البحث -->
       <div class="col-lg-6 order-lg-2 mb-4">
         <div class="search-card rounded d-flex flex-row">
@@ -90,186 +90,6 @@
   </div>
 </div>
 
-<!-- تحسين التنسيق -->
-<style>
-  .card {
-    background: none;
-  }
-  .search-card input {
-    border-radius: 10px;
-    padding: 12px 20px;
-    border: 1.5px solid #dee2e6;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .search-card input:focus {
-    border-color: #4b6282;
-    box-shadow: 0 0 10px rgba(31, 38, 62, 0.3);
-  }
-
-  .search-card button {
-    border-radius: 10px;
-    background-color: #4b6282;
-    color: white;
-    font-size: 1rem;
-    padding: 10px 20px;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  .search-card button:hover {
-    background-color: #39404e;
-    transform: translateY(-2px);
-  }
-
-  /* تحسين المسافات بين العناصر */
-  .search-card .w-100 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  /* تنسيق شريط البحث */
-  .dataTables_filter {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .dataTables_filter input {
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    padding: 8px 15px;
-    outline: none;
-    left: 0px;
-    transition: all 0.3s ease-in-out;
-  }
-
-  .dataTables_filter input:focus {
-    border-color: #4b6282;
-    box-shadow: 0 0 10px rgba(31, 38, 62, 0.5);
-  }
-
-  /* تحسين أزرار التصدير */
-  .dt-buttons .btn {
-    margin: 0 5px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-  }
-
-  /* تنسيق جدول التنقل */
-  .pagination .page-item.active .page-link {
-    background-color: #4b6282 !important;
-    color: white !important;
-    border: none;
-  }
-
-  .pagination .page-link {
-    color: #4b6282 !important;
-    border-radius: 5px;
-  }
-
-  .pagination .page-link:hover {
-    background-color: #e9ecef;
-  }
-
-  /* تحسين تنسيق الجدول */
-  table.table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f9f9f9;
-  }
-
-  table.table-hover tbody tr:hover {
-    background-color: #e9ecef;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-  }
-
-  /* تخصيص حدود الجدول */
-  .table th,
-  .table td {
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-    text-align: center;
-    padding: 12px;
-  }
-
-  /* تحسين تباين العناوين */
-  .table thead th {
-    background-color: #4b6282;
-    color: #fff;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-
-  /* تخصيص الأزرار */
-  .btn {
-    transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-  }
-
-  .btn-warning:hover {
-    background-color: #ffcc00 !important;
-  }
-
-  .btn-danger:hover {
-    background-color: #dc3545 !important;
-  }
-
-  .btn-success:hover {
-    background-color: #28a745 !important;
-  }
-  .btn-primary {
-    background-color: #57779E !important;
-  }
-  .btn-primary:hover {
-    background-color: #4B6282 !important;
-  }
-
-  /* تحسين عرض الأيقونات داخل الأزرار */
-  .btn i {
-    margin-right: 5px;
-  }
-
-  .badge {
-    font-size: 0.9rem;
-    padding: 0.25rem 0.5rem;
-  }
-
-  /* تحسين النصوص في حالة لا يوجد مستخدمين */
-  .table-empty td {
-    font-size: 1.2rem;
-    color: #6c757d;
-  }
-
-  /* تخصيص الجدول ليبدو أكثر احترافيًا */
-  .card {
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .card-header {
-    background-color: #4b6282;
-    color: white;
-    padding: 15px 20px;
-  }
-
-  .card-body {
-    padding: 1rem 0 !important;
-  }
-
-  /* تخصيص الخلايا */
-  .table td,
-  .table th {
-    word-wrap: break-word;
-  }
-
-  .table td {
-    font-size: 0.95rem;
-  }
-</style>
 
 <!-- تحسين التفاعل -->
 <script>
