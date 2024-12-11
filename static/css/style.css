@@ -203,6 +203,11 @@
 .content.collapsed{
   margin-right: 80px;
 }
+/* إخفاء العنوان عند وجود الفئة 'collapsed' */
+.sidebar.collapsed h5 {
+  display: none;
+}
+
 
 .sidebar-content {
   height: calc(100% - 100px);
@@ -318,9 +323,9 @@ a:focus {
     top:80px;
   }
 
-  .collapsed h5{
+  /* .collapsed h5{
     display: none !important;
-  }
+  } */
 
   /* زر القائمة (menu) في وضع الجوال */
   .layout-nav {
@@ -802,4 +807,46 @@ button:hover {
 
 
 /* --------------------------------   entitys.html   ------------------------------------------ */
+
+/* --------------------------------------------------------- */
+
+    
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .stat-card h3 {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .stat-card p {
+    margin: 0.5rem 0 0;
+    opacity: 0.9;
+    font-size: 1rem;
+  }
+
+  .stat-card i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
 

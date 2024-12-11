@@ -15,6 +15,9 @@ from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from .utils import encode_id, decode_id
 from django.views.decorators.cache import cache_control
+import json
+from django.db.models import Count, F, Q
+from django.db.models.functions import TruncMonth
 
 
 
@@ -553,5 +556,69 @@ def home(request):
 
 
 
+def dashboard(request):
+    # الإحصائيات الأساسية
+    total_entities = Entitys.objects.count()
+    total_surveys = Surveys.objects.count()
+    total_questions = Question.objects.count()
+    total_answers = Answer.objects.count()
 
-    
+    # إحصائيات الاستبيانات حسب الفئات
+    surveys_by_category = (
+        Surveys.objects.values('category')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    surveys_by_category_labels = [item['category'] for item in surveys_by_category]
+    surveys_by_category_data = [item['count'] for item in surveys_by_category]
+
+    # إحصائيات الأسئلة حسب النوع
+    questions_by_type = (
+        Question.objects.values('question_type')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    questions_by_type_labels = [item['question_type'] for item in questions_by_type]
+    questions_by_type_data = [item['count'] for item in questions_by_type]
+
+    # نسبة الإجابات المكتملة لكل استبيان
+    surveys_with_completion_rate = []
+    surveys = Surveys.objects.all()
+    for survey in surveys:
+        total_questions = survey.answers.count()
+        total_answers = Answer.objects.filter(survey=survey).count()
+        completion_rate = (
+            (total_answers / total_questions * 100) if total_questions > 0 else 0
+        )
+        surveys_with_completion_rate.append({
+            'name': survey.name,
+            'completion_rate': round(completion_rate, 2),
+        })
+    completion_rate_labels = [survey['name'] for survey in surveys_with_completion_rate]
+    completion_rate_data = [survey['completion_rate'] for survey in surveys_with_completion_rate]
+
+    # الكيانات المرتبطة بأكبر عدد من الاستبيانات
+    entities_with_surveys = (
+        Entitys.objects.annotate(survey_count=Count('surveys'))
+        .order_by('-survey_count')[:5]
+    )
+    entities_with_surveys_labels = [entity.name for entity in entities_with_surveys]
+    entities_with_surveys_data = [entity.survey_count for entity in entities_with_surveys]
+
+    # تمرير البيانات إلى القالب
+    context = {
+        'total_entities': total_entities,
+        'total_surveys': total_surveys,
+        'total_questions': total_questions,
+        'total_answers': total_answers,
+        'surveys_by_category_labels': json.dumps(surveys_by_category_labels),
+        'surveys_by_category_data': json.dumps(surveys_by_category_data),
+        'questions_by_type_labels': json.dumps(questions_by_type_labels),
+        'questions_by_type_data': json.dumps(questions_by_type_data),
+        'completion_rate_labels': json.dumps(completion_rate_labels),
+        'completion_rate_data': json.dumps(completion_rate_data),
+        'entities_with_surveys_labels': json.dumps(entities_with_surveys_labels),
+        'entities_with_surveys_data': json.dumps(entities_with_surveys_data),
+    }
+
+    return render(request, 'survey/dashboard.html', context)

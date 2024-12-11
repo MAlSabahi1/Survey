@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- تضمين Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container my-4">
+  <!-- قسم الترحيب -->
+    <div class="welcome-section text-right my-4">
+    <h1>مرحباً، moh!</h1>
+    <p>مرحباً بك في لوحة تحكم نظام الاستبيانات</p>
+    </div>
+
+    <div class="stats-grid">
+        <!-- إجمالي الكيانات -->
+        <div class="stat-card">
+          <i class="fas fa-building"></i>
+          <h3>{{ total_entities }}</h3>
+          <p>إجمالي الكيانات</p>
+        </div>
+        
+        <!-- إجمالي الاستبيانات -->
+        <div class="stat-card">
+          <i class="fas fa-poll"></i>
+          <h3>{{ total_surveys }}</h3>
+          <p>إجمالي الاستبيانات</p>
+        </div>
+        
+        <!-- إجمالي الأسئلة -->
+        <div class="stat-card">
+          <i class="fas fa-question-circle"></i>
+          <h3>{{ total_questions }}</h3>
+          <p>إجمالي الأسئلة</p>
+        </div>
+        
+        <!-- إجمالي الإجابات -->
+        <div class="stat-card">
+          <i class="fas fa-comment-dots"></i>
+          <h3>{{ total_answers }}</h3>
+          <p>إجمالي الإجابات</p>
+        </div>
+      </div>
+
+  <!-- الرسوم البيانية -->
+  <div class="row mt-5 g-4">
+    <!-- توزيع الاستبيانات حسب الفئات -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5 class="mb-0 text-white">توزيع الاستبيانات حسب الفئات</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="surveysByCategoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- توزيع الأسئلة حسب النوع -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5 class="mb-0 text-white">توزيع الأسئلة حسب النوع</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="questionsByTypeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- نسبة الإجابات المكتملة لكل استبيان -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5 class="mb-0 text-white">نسبة الإجابات المكتملة لكل استبيان</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="completionRateChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- الكيانات المرتبطة بأكبر عدد من الاستبيانات -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5 class="mb-0 text-white">الكيانات المرتبطة بأكبر عدد من الاستبيانات</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="entitiesBySurveysChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+
+
+</div>
+
+<!-- تضمين Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- تضمين Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // بيانات الرسوم البيانية من العرض
+  const surveysByCategoryLabels = {{ surveys_by_category_labels|safe }};
+  const surveysByCategoryData = {{ surveys_by_category_data|safe }};
+
+  const questionsByTypeLabels = {{ questions_by_type_labels|safe }};
+  const questionsByTypeData = {{ questions_by_type_data|safe }};
+
+  const completionRateLabels = {{ completion_rate_labels|safe }};
+  const completionRateData = {{ completion_rate_data|safe }};
+
+  const entitiesWithSurveysLabels = {{ entities_with_surveys_labels|safe }};
+  const entitiesWithSurveysData = {{ entities_with_surveys_data|safe }};
+  
+
+  // رسم توزيع الاستبيانات حسب الفئات
+  const ctx1 = document.getElementById('surveysByCategoryChart').getContext('2d');
+  new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: surveysByCategoryLabels,
+      datasets: [{
+        label: 'عدد الاستبيانات',
+        data: surveysByCategoryData,
+        backgroundColor: '#4e73df',
+        borderColor: '#4e73df',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+
+  // رسم توزيع الأسئلة حسب النوع
+  const ctx2 = document.getElementById('questionsByTypeChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'pie',
+    data: {
+      labels: questionsByTypeLabels,
+      datasets: [{
+        label: 'عدد الأسئلة',
+        data: questionsByTypeData,
+        backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+
+  // رسم نسبة الإجابات المكتملة لكل استبيان
+  const ctx3 = document.getElementById('completionRateChart').getContext('2d');
+  new Chart(ctx3, {
+    type: 'line',
+    data: {
+      labels: completionRateLabels,
+      datasets: [{
+        label: 'نسبة الإكمال (%)',
+        data: completionRateData,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+
+  // رسم الكيانات المرتبطة بأكبر عدد من الاستبيانات
+  const ctx4 = document.getElementById('entitiesBySurveysChart').getContext('2d');
+  new Chart(ctx4, {
+    type: 'doughnut',
+    data: {
+      labels: entitiesWithSurveysLabels,
+      datasets: [{
+        label: 'عدد الاستبيانات',
+        data: entitiesWithSurveysData,
+        backgroundColor: ['#1cc88a', '#36a2eb', '#ffcd56', '#4e73df', '#ff6384'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+
+
+        // التأكد من أن البيانات يتم تمريرها بشكل صحيح من Django إلى JavaScript
+        const surveysByMonthLabels = JSON.parse('{{ surveys_by_month_labels|escapejs }}');
+        const surveysByMonthData = JSON.parse('{{ surveys_by_month_data|escapejs }}');
+        const topSurveysLabels = JSON.parse('{{ top_surveys_labels|escapejs }}');
+        const topSurveysData = JSON.parse('{{ top_surveys_data|escapejs }}');
+        const entitiesByQuestionsLabels = JSON.parse('{{ entities_by_questions_labels|escapejs }}');
+        const entitiesByQuestionsData = JSON.parse('{{ entities_by_questions_data|escapejs }}');
+        const completedSurveysData = [{{ completed_surveys }}, {{ incomplete_surveys }}];
+      
+        // إجمالي الاستبيانات لكل شهر
+        new Chart(document.getElementById('surveysByMonthChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: surveysByMonthLabels,
+            datasets: [{
+              label: 'عدد الاستبيانات',
+              data: surveysByMonthData,
+              backgroundColor: '#4e73df'
+            }]
+          },
+          options: { responsive: true }
+        });
+      
+        // الاستبيانات الأكثر إجابة
+        new Chart(document.getElementById('topSurveysChart').getContext('2d'), {
+          type: 'horizontalBar',
+          data: {
+            labels: topSurveysLabels,
+            datasets: [{
+              label: 'عدد الإجابات',
+              data: topSurveysData,
+              backgroundColor: '#1cc88a'
+            }]
+          },
+          options: { responsive: true }
+        });
+      
+        // توزيع الكيانات حسب عدد الأسئلة
+        new Chart(document.getElementById('entitiesByQuestionsChart').getContext('2d'), {
+          type: 'pie',
+          data: {
+            labels: entitiesByQuestionsLabels,
+            datasets: [{
+              label: 'عدد الأسئلة',
+              data: entitiesByQuestionsData,
+              backgroundColor: ['#36a2eb', '#ff9f40', '#4bc0c0', '#ff6384', '#ffcd56']
+            }]
+          },
+          options: { responsive: true }
+        });
+      
+        // نسبة الاستبيانات المكتملة وغير المكتملة
+        new Chart(document.getElementById('completedSurveysChart').getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['مكتملة', 'غير مكتملة'],
+            datasets: [{
+              data: completedSurveysData,
+              backgroundColor: ['#1cc88a', '#e74a3b']
+            }]
+          },
+          options: { responsive: true }
+        });
+    </script>
+    
+
+
+{% endblock %}

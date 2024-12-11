@@ -38,6 +38,7 @@ class Question(models.Model):
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)
     category = models.CharField(max_length=50, choices=CATEGORIES, default='systems')
     is_active = models.BooleanField(default=True)  # حقل نشط
+    
 
 
     def __str__(self):
@@ -75,38 +76,9 @@ class Answer(models.Model):
     def __str__(self):
         return f"{self.survey} for {self.entity}"
 
-# New model to store user survey responses and summary
-class SurveyResponse(models.Model):
-    survey = models.ForeignKey(Surveys, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    summary = models.TextField(blank=True, null=True)  # User's survey summary
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Response by {self.user} for {self.survey}"
 
-# New model to store notes for each question within a survey response
-class QuestionResponse(models.Model):
-    response = models.ForeignKey(SurveyResponse, on_delete=models.CASCADE, related_name='question_responses')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    note = models.TextField(blank=True, null=True)  # User's note for each question
-
-    def __str__(self):
-        return f"Note for {self.question} by {self.response.user}"
     
 
-
-class SurveyEntityResponse(models.Model):
-    survey = models.ForeignKey(Surveys, on_delete=models.CASCADE, related_name="responses")
-    entity = models.ForeignKey(Entitys, on_delete=models.CASCADE, related_name="responses")
-    # sector = models.ForeignKey(Sector, null=True, blank=True, on_delete=models.CASCADE, related_name="responses")
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    answers = models.JSONField(default=dict)  # Store answers in JSON format
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        entity_name = self.entity.name
-        sector_name = f" - {self.sector.name}" if self.sector else ""
-        return f"Response for {self.survey.title} by {self.user} in {entity_name}{sector_name}"
 
 

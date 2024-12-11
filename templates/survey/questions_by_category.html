@@ -164,7 +164,8 @@
       <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
         إرسال الإجابات
       </button>
-      <button id="reset-storage" class="btn btn-secondary px-5 py-3">إعادة تعيين النموذج</button>
+      <button id="reset-storage" type="button" class="btn btn-secondary px-5 py-3">إعادة تعيين النموذج</button>
+
     </div>
   </form>
 </div>
@@ -250,19 +251,17 @@
     // إضافة حدث للزر لإعادة تعيين التخزين
     const resetButton = document.getElementById("reset-storage");
     if (resetButton) {
-        resetButton.addEventListener("click", function () {
-            // مسح البيانات المخزنة في localStorage
-            localStorage.clear();
-            
-            // إعادة تعيين الحقول في النموذج
-            inputs.forEach((input) => {
-                if (input.type === "radio" || input.type === "checkbox") {
-                    input.checked = false; // إزالة التحديد
-                } else {
-                    input.value = ''; // مسح النصوص المدخلة
-                }
-            });
+      resetButton.addEventListener("click", function () {
+        inputs.forEach((input) => {
+          if (input.type === "radio" || input.type === "checkbox") {
+            input.checked = false;
+          } else {
+            input.value = "";
+          }
         });
+        localStorage.clear(); // مسح التخزين المحلي
+      });
+      
     }
 });
 

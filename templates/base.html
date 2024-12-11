@@ -56,6 +56,10 @@
         <a href="{% url 'home' %}" class="active">
           <i class="fas fa-home"></i><span>الرئيسية</span>
         </a>
+        <h6>الاحصائيات</h6>
+        <a href="{% url 'dashboard' %}">
+          <i class="fas fa-chart-pie"></i><span>الاحصائيات</span>
+        </a>
         <h6>إدارة الاسئلة</h6>
         <a href="{% url 'add_question' %}">
           <i class="fas fa-plus-circle"></i><span>إضافة سؤال</span>
@@ -100,7 +104,7 @@
     <div class="content" id="content">{% block content %}{% endblock %}</div>
     
     {% block extra_js %}{% endblock %}
-    <script>
+    {% comment %} <script>
       document.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("sidebar");
         const content = document.getElementById("content");
@@ -126,7 +130,7 @@
           );
         });
       });
-    </script>
+    </script> {% endcomment %}
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const sidebar = document.getElementById("sidebar");
