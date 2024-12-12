@@ -92,7 +92,32 @@
       </div>
     </div>
 
-
+    <div class="row mt-5 g-4">
+        <!-- عدد الاستبيانات لكل شهر -->
+        <div class="col-12 col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+              <h5 class="mb-0 text-white">عدد الاستبيانات لكل شهر</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="surveysByMonthChart"></canvas>
+            </div>
+          </div>
+        </div>
+      
+        <!-- أكثر الكيانات مشاركة بالإجابات -->
+        <div class="col-12 col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+              <h5 class="mb-0 text-white">أكثر الكيانات مشاركة بالإجابات</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="topEntitiesChart"></canvas>
+            </div>
+          </div>
+        </div>
+      
+      
 
 </div>
 
@@ -205,70 +230,37 @@
     }
   });
 
+ // عدد الاستبيانات لكل شهر
+ new Chart(document.getElementById('surveysByMonthChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: {{ surveys_by_month_labels|safe }},
+      datasets: [{
+        label: 'عدد الاستبيانات',
+        data: {{ surveys_by_month_data|safe }},
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: { responsive: true }
+  });
 
-        // التأكد من أن البيانات يتم تمريرها بشكل صحيح من Django إلى JavaScript
-        const surveysByMonthLabels = JSON.parse('{{ surveys_by_month_labels|escapejs }}');
-        const surveysByMonthData = JSON.parse('{{ surveys_by_month_data|escapejs }}');
-        const topSurveysLabels = JSON.parse('{{ top_surveys_labels|escapejs }}');
-        const topSurveysData = JSON.parse('{{ top_surveys_data|escapejs }}');
-        const entitiesByQuestionsLabels = JSON.parse('{{ entities_by_questions_labels|escapejs }}');
-        const entitiesByQuestionsData = JSON.parse('{{ entities_by_questions_data|escapejs }}');
-        const completedSurveysData = [{{ completed_surveys }}, {{ incomplete_surveys }}];
-      
-        // إجمالي الاستبيانات لكل شهر
-        new Chart(document.getElementById('surveysByMonthChart').getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: surveysByMonthLabels,
-            datasets: [{
-              label: 'عدد الاستبيانات',
-              data: surveysByMonthData,
-              backgroundColor: '#4e73df'
-            }]
-          },
-          options: { responsive: true }
-        });
-      
-        // الاستبيانات الأكثر إجابة
-        new Chart(document.getElementById('topSurveysChart').getContext('2d'), {
-          type: 'horizontalBar',
-          data: {
-            labels: topSurveysLabels,
-            datasets: [{
-              label: 'عدد الإجابات',
-              data: topSurveysData,
-              backgroundColor: '#1cc88a'
-            }]
-          },
-          options: { responsive: true }
-        });
-      
-        // توزيع الكيانات حسب عدد الأسئلة
-        new Chart(document.getElementById('entitiesByQuestionsChart').getContext('2d'), {
-          type: 'pie',
-          data: {
-            labels: entitiesByQuestionsLabels,
-            datasets: [{
-              label: 'عدد الأسئلة',
-              data: entitiesByQuestionsData,
-              backgroundColor: ['#36a2eb', '#ff9f40', '#4bc0c0', '#ff6384', '#ffcd56']
-            }]
-          },
-          options: { responsive: true }
-        });
-      
-        // نسبة الاستبيانات المكتملة وغير المكتملة
-        new Chart(document.getElementById('completedSurveysChart').getContext('2d'), {
-          type: 'doughnut',
-          data: {
-            labels: ['مكتملة', 'غير مكتملة'],
-            datasets: [{
-              data: completedSurveysData,
-              backgroundColor: ['#1cc88a', '#e74a3b']
-            }]
-          },
-          options: { responsive: true }
-        });
+  // أكثر الكيانات مشاركة بالإجابات
+  new Chart(document.getElementById('topEntitiesChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: {{ top_entities_labels|safe }},
+      datasets: [{
+        label: 'عدد الإجابات',
+        data: {{ top_entities_data|safe }},
+        backgroundColor: '#4e73df',
+      }]
+    },
+    options: { responsive: true }
+  });
+
+
     </script>
     
 

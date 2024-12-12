@@ -562,6 +562,7 @@ def dashboard(request):
     total_surveys = Surveys.objects.count()
     total_questions = Question.objects.count()
     total_answers = Answer.objects.count()
+    print(total_answers,total_questions)
 
     # إحصائيات الاستبيانات حسب الفئات
     surveys_by_category = (
@@ -585,10 +586,10 @@ def dashboard(request):
     surveys_with_completion_rate = []
     surveys = Surveys.objects.all()
     for survey in surveys:
-        total_questions = survey.answers.count()
-        total_answers = Answer.objects.filter(survey=survey).count()
+        # total_questions = survey.answers.count()  
+        total_answerss = Answer.objects.filter(survey=survey).count()
         completion_rate = (
-            (total_answers / total_questions * 100) if total_questions > 0 else 0
+            (total_answerss / total_questions * 100) if total_questions > 0 else 0
         )
         surveys_with_completion_rate.append({
             'name': survey.name,
@@ -605,7 +606,27 @@ def dashboard(request):
     entities_with_surveys_labels = [entity.name for entity in entities_with_surveys]
     entities_with_surveys_data = [entity.survey_count for entity in entities_with_surveys]
 
-    # تمرير البيانات إلى القالب
+
+    # عدد الاستبيانات التي تم إنشاؤها لكل شهر
+    surveys_by_month = (
+        Surveys.objects.annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    surveys_by_month_labels = [item['month'].strftime('%B') for item in surveys_by_month]
+    surveys_by_month_data = [item['count'] for item in surveys_by_month]
+
+    # أكثر الكيانات مشاركة بالإجابات
+    top_entities_by_answers = (
+        Entitys.objects.annotate(answer_count=Count('entity'))
+        .order_by('-answer_count')[:5]
+    )
+    top_entities_labels = [entity.name for entity in top_entities_by_answers]
+    top_entities_data = [entity.answer_count for entity in top_entities_by_answers]
+
+
+
     context = {
         'total_entities': total_entities,
         'total_surveys': total_surveys,
@@ -619,6 +640,10 @@ def dashboard(request):
         'completion_rate_data': json.dumps(completion_rate_data),
         'entities_with_surveys_labels': json.dumps(entities_with_surveys_labels),
         'entities_with_surveys_data': json.dumps(entities_with_surveys_data),
+        'surveys_by_month_labels': json.dumps(surveys_by_month_labels),
+        'surveys_by_month_data': json.dumps(surveys_by_month_data),
+        'top_entities_labels': json.dumps(top_entities_labels),
+        'top_entities_data': json.dumps(top_entities_data),
     }
 
     return render(request, 'survey/dashboard.html', context)
