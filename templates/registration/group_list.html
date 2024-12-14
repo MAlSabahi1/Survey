@@ -1,13 +1,15 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+
+{% block content %}
 <div class="container-fluid px-lg-4" dir="rtl">
   <div class="row">
     <div class="col-lg-12 order-lg-1">
       <!-- رأس الصفحة -->
       <div class="card border-0 rounded-4">
-      <div class="card-header text-white text-center rounded-top py-4 mb-4">
-        <h3 class="mb-0"><i class="fas fa-layer-group"></i> قائمة المجموعات</h3>
+        <div class="card-header text-white text-center rounded-top py-4 mb-4">
+          <h3 class="mb-0"><i class="fas fa-layer-group"></i> قائمة المجموعات</h3>
+        </div>
       </div>
-    </div>
 
       <!-- قسم البحث وإضافة مجموعة جديدة -->
       <div class="col-12 d-flex justify-content-between mb-4">
@@ -52,7 +54,7 @@
               </thead>
               <tbody>
                 {% for group in groups %}
-                <tr>
+                <tr id="group-row-{{ group.id }}">
                   <td>{{ group.name }}</td>
                   <td>
                     <a
@@ -61,12 +63,13 @@
                     >
                       <i class="fas fa-edit"></i> تعديل
                     </a>
-                    <a
-                      href="{% url 'delete_group' group.id %}"
-                      class="btn btn-outline-danger btn-md mb-1"
+                    <button
+                      class="btn btn-outline-danger btn-md mb-1 delete-group-btn"
+                      data-group-id="{{ group.id }}"
+                      data-group-name="{{ group.name }}"
                     >
                       <i class="fas fa-trash"></i> حذف
-                    </a>
+                    </button>
                   </td>
                 </tr>
                 {% empty %}
@@ -84,9 +87,6 @@
     </div>
   </div>
 </div>
-
-
-
 
 <!-- تحسين التفاعل -->
 <script>
@@ -115,6 +115,72 @@
       }
     }
   }
-</script>
 
+  // Script to handle delete confirmation
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-group-btn");
+  
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const groupId = this.getAttribute("data-group-id");
+        const groupName = this.getAttribute("data-group-name");
+  
+        // عرض رسالة تأكيد الحذف
+        Swal.fire({
+          title: "هل أنت متأكد؟",
+          text: `أنت على وشك حذف المجموعة "${groupName}". لا يمكن التراجع عن هذا الإجراء!`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "نعم، احذفها",
+          cancelButtonText: "إلغاء",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // إرسال الطلب عبر AJAX
+            fetch("{% url 'delete_group' 0 %}".replace("0", groupId), {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+            })
+              .then((response) => {
+                if (response.ok) {
+                  // حذف الصف من الجدول
+                  const row = document.getElementById(`group-row-${groupId}`);
+                  if (row) row.remove();
+  
+                  // عرض رسالة نجاح تختفي بعد 2 ثانية
+                  Swal.fire({
+                    title: "تم الحذف!",
+                    text: `تم حذف المجموعة "${groupName}" بنجاح.`,
+                    icon: "success",
+                    timer: 1000, 
+                    showConfirmButton: false,  // إخفاء زر "OK"
+                  });
+                } else {
+                  // عرض رسالة خطأ تختفي بعد 2 ثانية
+                  Swal.fire({
+                    title: "خطأ!",
+                    text: "حدث خطأ أثناء محاولة حذف المجموعة.",
+                    icon: "error",
+                    timer: 2000,  // الوقت بالمللي ثانية (2000ms = 2 ثانية)
+                    showConfirmButton: false,  // إخفاء زر "OK"
+                  });
+                }
+              })
+              .catch((error) => {
+                Swal.fire({
+                  title: "خطأ!",
+                  text: "فشل في الاتصال بالسيرفر.",
+                  icon: "error",
+                  timer: 2000,  // الوقت بالمللي ثانية (2000ms = 2 ثانية)
+                  showConfirmButton: false,  // إخفاء زر "OK"
+                });
+              });
+          }
+        });
+      });
+    });
+  });
+  
+</script>
 {% endblock %}

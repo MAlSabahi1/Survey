@@ -65,7 +65,7 @@
                 {% endif %}
               </td>
               <td>
-                {% if 'survey.change_question' in user_permissions %}
+                {% if perms.survey.change_question %}
                 <button
                 class="btn btn-outline-warning edit-question-btn"
                 data-id="{{ question.id }}"
@@ -77,7 +77,7 @@
                 <i class="fa-regular fa-pen-to-square"></i>
             </button>
             {% endif %}
-            {% if 'survey.delete_question' in user_permissions %}
+            {% if perms.survey.delete_question %}
             <button
             class="btn btn-outline-danger delete-question-btn"
             data-id="{{ question.id }}"

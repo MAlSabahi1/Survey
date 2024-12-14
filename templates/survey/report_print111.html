@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير الإجابات</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            direction: rtl;
+            margin: 20px;
+            padding: 0;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header .logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header .logos img {
+            max-width: 100px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #004085;
+        }
+
+        header h2 {
+            margin: 5px 0;
+            font-size: 22px;
+            color: #555;
+        }
+
+        header p {
+            font-size: 16px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        td {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        tfoot td {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+
+        .report-footer {
+            text-align: right;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .print-btn {
+            display: block;
+            text-align: center;
+            margin: 30px auto;
+        }
+
+        .print-btn button {
+            padding: 12px 25px;
+            font-size: 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .print-btn button:hover {
+            background-color: #218838;
+        }
+
+        @media print {
+            .print-btn {
+                display: none;
+            }
+
+            body {
+                background-color: #fff;
+                margin: 0;
+            }
+
+            header h1, header h2, header p {
+                color: #333;
+            }
+
+            table th, table td {
+                padding: 12px 15px;
+            }
+
+            table {
+                box-shadow: none;
+            }
+        }
+
+        .select-container {
+            margin-bottom: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logos">
+            <img src="{{ logo1_url }}" alt="Logo 1">
+            <div>
+                <h1>الجمهورية اليمنية</h1>
+                <h2>رئاسة الوزراء - اللجنة العليا للاستبيانات</h2>
+                <h2>تقرير الإجابات</h2>
+            </div>
+            <img src="{{ logo2_url }}" alt="Logo 2">
+        </div>
+        <p>تاريخ التقرير: <strong>{{ report_date }}</strong></p>
+    </header>
+
+    <table>
+        <thead>
+            <tr>
+                <th>م</th>
+                <th>اسم الجهة</th>
+                <th>اسم الاستبيان</th>
+                <th>الإجابة</th>
+                <th>ملاحظات</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- بيانات الجدول (تُملأ من Django) -->
+            {% for answer in answers %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ answer.entity.name }}</td>
+                <td>{{ answer.question.text }}</td>
+                <td>{{ answer.answer_text }}</td>
+                <td>{{ answer.note }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="print-btn">
+        <button onclick="window.print()">طباعة التقرير</button>
+    </div>
+
+    <footer class="report-footer">
+        <p>تم إعداد هذا التقرير في {{ report_date }}</p>
+    </footer>
+
+    <script>
+        const questionSelect = document.getElementById("question-select");
+        const optionsContainer = document.getElementById("options-container");
+      
+        questionSelect.addEventListener("change", function () {
+            const questionId = this.value;
+            const questionType = this.options[this.selectedIndex].getAttribute("data-type");
+
+            optionsContainer.innerHTML = "";  // مسح المحتوى الحالي للخيارات
+
+            if (questionId) {
+                if (questionType === "yes_no") {
+                    // عرض الخيارات "نعم" و "لا" للأسئلة من نوع Yes/No
+                    optionsContainer.innerHTML = `
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-primary mx-2" onclick="redirectToReport(${questionId}, 'yes')">نعم</button>
+                            <button class="btn btn-outline-secondary mx-2" onclick="redirectToReport(${questionId}, 'no')">لا</button>
+                        </div>
+                    `;
+                } else {
+                    // جلب الخيارات من السيرفر للأسئلة من نوع Multiple Choice أو Radio
+                    fetch(`/get_choices/${questionId}/`)  // تأكد من إعداد مسار View لجلب الخيارات
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.choices.length > 0) {
+                                let buttonsHTML = "<div class='text-center mt-4'>";
+                                data.choices.forEach((choice) => {
+                                    buttonsHTML += `<button class="btn btn-outline-primary mx-2" onclick="redirectToReport(${questionId}, '${choice.text}')">${choice.text}</button>`;
+                                });
+                                buttonsHTML += "</div>";
+                                optionsContainer.innerHTML = buttonsHTML;
+                            } else {
+                                optionsContainer.innerHTML = "<p class='text-center text-muted'>لا توجد خيارات لهذا السؤال.</p>";
+                            }
+                        });
+                }
+            }
+        });
+
+        // دالة لتوجيه المستخدم إلى صفحة التقرير
+        function redirectToReport(questionId, answerValue) {
+            window.location.href = `/report/print/${questionId}/${answerValue}/`;
+        }
+    </script>
+
+</body>
+</html>

@@ -14,7 +14,7 @@
 
                 <!-- الجسم -->
                 <div class="card-body py-5">
-                    <form method="post" class="p-4" novalidate>
+                    <form id="create-group-form" method="post" class="p-4" novalidate>
                         {% csrf_token %}
                         
                         <!-- عرض الحقول بشكل منظم -->
@@ -25,11 +25,9 @@
                                 <div class="input-group">
                                     {{ field|add_class:"form-control text-end" }}
                                 </div>
-                                {% if field.errors %}
-                                <div class="text-danger mt-1">
-                                    <small>{{ field.errors }}</small>
+                                <div class="text-danger mt-1 d-none" id="error-{{ field.name }}">
+                                    <!-- سيتم تعبئة الأخطاء عبر AJAX -->
                                 </div>
-                                {% endif %}
                             </div>
                             {% endfor %}
                         </div>
@@ -46,5 +44,57 @@
         </div>
     </div>
 </div>
+
+<!-- تضمين مكتبة jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- تضمين مكتبة SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        // عند إرسال النموذج
+        $('#create-group-form').on('submit', function (e) {
+            e.preventDefault(); // منع الإرسال الافتراضي
+
+            // إرسال بيانات النموذج باستخدام AJAX
+            $.ajax({
+                url: '', // يرسل الطلب إلى نفس عنوان URL
+                type: 'POST',
+                data: $(this).serialize(), // تسلسل بيانات النموذج
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        // عرض رسالة النجاح باستخدام SweetAlert
+                        Swal.fire({
+                            title: 'تم الحفظ!',
+                            text: response.message,
+                            icon: 'success',
+                            showConfirmButton: false, // إخفاء زر "OK"
+                            timer: 1000, // اختفاء الرسالة بعد ثانية واحدة
+                            timerProgressBar: true // إظهار شريط تقدم
+                        }).then(() => {
+                            // إعادة التوجيه بعد انتهاء المؤقت
+                            window.location.href = response.redirect_url;
+                        });
+                    } else {
+                        // إذا كان هناك أخطاء، عرضها
+                        for (const [field, errors] of Object.entries(response.errors)) {
+                            $(`#error-${field}`).text(errors.join(', ')).removeClass('d-none');
+                        }
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'خطأ!',
+                        text: 'حدث خطأ أثناء معالجة الطلب.',
+                        icon: 'error',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            });
+        });
+    });
+</script>
 
 {% endblock %}

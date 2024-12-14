@@ -4,9 +4,12 @@ from django.views import generic
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
 from .forms import *
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from survey.models import *
 from django.contrib.auth import logout, login
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 class SignUpView(generic.CreateView):
@@ -28,7 +31,7 @@ def is_admin(user):
     return user.is_authenticated and user.is_staff
 
 @login_required
-@user_passes_test(lambda user: user.is_superuser)  # السماح فقط للمشرفين
+@permission_required('survey.add_user', raise_exception=True)
 def create_user(request):
     if request.method == 'POST':
         form = UserForm(request.POST)
@@ -46,20 +49,15 @@ def create_user(request):
 
 
 @login_required
-@user_passes_test(lambda user: user.is_superuser)
+@permission_required('survey.change_user', raise_exception=True)
 def editUsers(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    print(request.method,'2222222222222222222')
     if request.method == 'POST':
         form = UserForm(request.POST, instance=user)
-        print('111111111111111111111111111111111')
         if form.is_valid():
-            print('111111111111111111111111111111111')
             user = form.save()
             # تحديث الكيانات المرتبطة
-            print("Form is valid")
             entities = form.cleaned_data['entities']
-            print(f"Selected entities: {entities}")
                 
             # حذف الكيانات القديمة فقط إذا كانت موجودة
             UserEntityPermission.objects.filter(user=user).delete()
@@ -77,7 +75,7 @@ def editUsers(request, user_id):
 
 # views.py
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.view_group', raise_exception=True)
 def group_list(request):
     groups = Group.objects.all()  # جلب جميع المجموعات
     
@@ -91,25 +89,40 @@ def group_list(request):
                 pass  # يمكن استبدال هذا بحفظ المعلومات في قاعدة البيانات أو تعديل الحقول
         return redirect('group_permissions')  # إعادة توجيه بعد الحفظ
     forms = [GroupPermissionForm(instance=group, prefix=str(group.id)) for group in groups]  # إنشاء نموذج لكل مجموعة
-    print(forms,'1111111111111111111111111111111111')
     return render(request, 'registration/group_permissions.html', {'forms': forms})
 
 
+
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.add_group', raise_exception=True)
 def create_group(request):
     if request.method == 'POST':
         form = GroupForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('group_list')  # Redirect to a list of groups
+            # إذا كان الطلب AJAX، قم بإرجاع JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'تم إنشاء المجموعة بنجاح!',
+                    'redirect_url': '/accounts/groups/'  # المسار المحدث لإعادة التوجيه
+                })
+            # إذا لم يكن AJAX، قم بإعادة التوجيه
+            return redirect('group_list')
+        else:
+            # إذا كان الطلب AJAX مع خطأ في النموذج، قم بإرجاع الأخطاء
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                })
     else:
         form = GroupForm()
     return render(request, 'registration/create_group.html', {'form': form})
 
 
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.change_group', raise_exception=True)
 def edit_group(request, pk):
     group = get_object_or_404(Group, pk=pk)  # جلب المجموعة المحددة أو عرض 404 إذا لم تكن موجودة
     if request.method == 'POST':
@@ -121,23 +134,29 @@ def edit_group(request, pk):
         form = GroupForm(instance=group)
     return render(request, 'registration/edit_group.html', {'form': form, 'group': group})
 
-@login_required
-@user_passes_test(is_admin)
-def delete_group(request, pk):
-    group = get_object_or_404(Group, pk=pk)  # جلب المجموعة أو عرض خطأ 404 إذا لم تكن موجودة
-    if request.method == 'POST':
-        group.delete()
-        return redirect('group_list')  # إعادة التوجيه بعد الحذف
-    return render(request, 'registration/delete_group.html', {'group': group})
+
 
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.delete_group', raise_exception=True)
+@csrf_exempt  # تأكد من أن الطلبات من نوع POST تعمل بشكل صحيح
+def delete_group(request, pk):
+    if request.method == "POST":
+        group = get_object_or_404(Group, pk=pk)
+        group.delete()
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required
+@permission_required('survey.view_user', raise_exception=True)
 def user_list(request):
     users = User.objects.all()  # Get all users
     return render(request, 'registration/user_list.html', {'users': users})
 
+
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.view_group', raise_exception=True)
 def group_list(request):
     groups = Group.objects.all()  # Get all groups
     return render(request, 'registration/group_list.html', {'groups': groups})
@@ -152,7 +171,7 @@ def toggle_user_status(request, user_id):
     return redirect('user_list')
 
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.change_user', raise_exception=True)
 def edit_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if request.method == 'POST':

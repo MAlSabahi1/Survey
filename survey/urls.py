@@ -22,5 +22,7 @@ urlpatterns = [
     path('questions-list/', views.questions_list, name='questions_list'),  # الرابط لعرض جدول الأسئلة
     path('update_question/<int:question_id>/', views.update_question, name='update_question'),
     path('delete_question/<int:question_id>/', views.delete_question, name='delete_question'),
+    # path('report/print/<int:question_id>/<str:answer_value>/', views.print_answer_report, name='print_answer_report'),
+
   
 ]

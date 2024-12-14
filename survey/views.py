@@ -17,8 +17,9 @@ from django.contrib.contenttypes.models import ContentType
 
 
 
+
 @login_required
-@user_passes_test(lambda u: u.is_staff)
+@permission_required('survey.add_entitys', raise_exception=True)
 def create_entitys(request):
     if request.method == 'POST':
         form = EntitysForm(request.POST)
@@ -46,9 +47,6 @@ def show_categories(request, pk):
     staff_surveys = Surveys.objects.filter(category='staff', entities=entity)
     infrastructure_surveys = Surveys.objects.filter(category='infrastructure', entities=entity)
     systems_surveys = Surveys.objects.filter(category='systems', entities=entity)
-
-    user_permissions = request.user.get_all_permissions()
-
     
     return render(request, 'survey/categories.html', {
         'entity': entity,
@@ -56,7 +54,6 @@ def show_categories(request, pk):
         'staff_surveys': staff_surveys,
         'infrastructure_surveys': infrastructure_surveys,
         'systems_surveys': systems_surveys,
-        'user_permissions': user_permissions,  # تمرير الصلاحيات
 
     })
 
@@ -139,6 +136,7 @@ def submit_survey(request, category, pk):
 
 
 @login_required
+@permission_required('survey.delete_surveys', raise_exception=True)
 def delete_survey(request, survey_id, entity_id):
     # فك تشفير entity_id
     decoded_entity_id = decode_id(entity_id)
@@ -205,7 +203,7 @@ def filter_questions(keywords=None, question_types=None):
 
 
 @login_required
-@user_passes_test(is_admin)
+@permission_required('survey.add_question', raise_exception=True)
 def add_question(request):
     if request.method == 'POST':
         question_form = QuestionForm(request.POST)
@@ -231,13 +229,16 @@ def add_question(request):
     else:
         question_form = QuestionForm()
 
+    user_permissions = request.user.get_all_permissions()
+
     return render(request, 'survey/add_question.html', {
         'question_form': question_form,
+        'user_permissions': user_permissions,
     })
 
 
 @login_required
-# @user_passes_test(is_admin)
+@permission_required('survey.view_question', raise_exception=True)
 def questions_list(request):
     if request.method == 'GET':
         # الحصول على التصنيف إذا تم تحديده
@@ -261,13 +262,11 @@ def questions_list(request):
             ]
             return JsonResponse({'success': True, 'questions': questions_data})
         
-        user_permissions = request.user.get_all_permissions()
 
 
         # إذا كان طلب عادي (غير AJAX)، عرض الصفحة
         return render(request, 'survey/questions_list.html', {
             'questions': questions,
-            'user_permissions':user_permissions,
             })
 
 
@@ -275,7 +274,7 @@ def questions_list(request):
 # التعديل
 
 @login_required
-# @user_passes_test(is_admin)
+@permission_required('survey.change_question', raise_exception=True)
 def update_question(request, question_id):
     if request.method == 'POST':
         question = get_object_or_404(Question, id=question_id)
@@ -309,7 +308,7 @@ def update_question(request, question_id):
 # الحذف 
 
 @login_required
-# @user_passes_test(is_admin)
+@permission_required('survey.delete_question', raise_exception=True)
 def delete_question(request, question_id):
     if request.method == 'POST':
         try:
@@ -389,13 +388,10 @@ def get_choices(request, question_id):
 
 
 @login_required
+@permission_required('survey.change_surveys', raise_exception=True)
 def edit_survey(request, survey_id):
     # الحصول على الاستبيان
     survey = get_object_or_404(Surveys, id=survey_id)
-
-    has_edit_permission = request.user.has_perm('survey.change_surveys')
-    print(request.user.has_perm('survey.change_surveys'))
-    print(has_edit_permission)
     
     # جلب الإجابات المتعلقة بالاستبيان
     answers = Answer.objects.filter(survey=survey).select_related('question', 'choice_selected')
@@ -463,12 +459,12 @@ def edit_survey(request, survey_id):
         'questions': questions,
         'answers': answers,
         'notes': notes,  
-        'has_edit_permission': has_edit_permission,
     })
 
 
 
 @login_required
+@permission_required('survey.view_entitys', raise_exception=True)
 def entity_list(request):
     entities = Entitys.objects.all()
     # parents = Entitys.objects.filter(parent) 
@@ -477,6 +473,7 @@ def entity_list(request):
 
 
 @login_required
+@permission_required('survey.change_entitys', raise_exception=True)
 @csrf_exempt
 def update_entity(request, entity_id):
     if request.method == "POST":
@@ -498,7 +495,9 @@ def update_entity(request, entity_id):
         return JsonResponse({'success': True, 'message': 'تم تحديث الكيان بنجاح!'})
     return JsonResponse({'success': False, 'message': 'طلب غير صالح'})
 
+
 @login_required
+@permission_required('survey.delete_entitys', raise_exception=True)
 @csrf_exempt
 def delete_entity(request, entity_id):
     if request.method == "POST":
@@ -510,7 +509,6 @@ def delete_entity(request, entity_id):
 
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
 def create_sector(request):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # استلام البيانات من الطلب
@@ -675,3 +673,26 @@ def dashboard(request):
     }
 
     return render(request, 'survey/dashboard.html', context)
+
+
+# # في ملف views.py
+# from django.shortcuts import render, get_object_or_404
+# from .models import Answer, Question  # تأكد من أن الـ models متاحة
+
+# def print_answer_report(request, question_id, answer_value):
+#     # جلب السؤال بناءً على الـ question_id
+#     question = get_object_or_404(Question, id=question_id)
+
+#     # جلب الإجابات التي تطابق الـ question_id و answer_value
+#     answers = Answer.objects.filter(question=question, answer_text=answer_value)
+
+#     # تمرير البيانات إلى القالب
+#     context = {
+#         'question': question,
+#         'answers': answers,
+#         'report_date': '2024-12-14',  # يمكنك استخدام التاريخ الفعلي أو توليده حسب الحاجة
+#         'logo1_url': '/path/to/logo1.png',
+#         'logo2_url': '/path/to/logo2.png',
+#     }
+
+#     return render(request, 'survey/report_print.html', context)

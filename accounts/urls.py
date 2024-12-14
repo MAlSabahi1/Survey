@@ -15,8 +15,7 @@ urlpatterns = [
     path('user/toggle-status/<int:user_id>/', views.toggle_user_status, name='toggle_user_status'),
     path('groups/', views.group_list, name='group_list'),
     path('groups/edit/<int:pk>/', views.edit_group, name='edit_group'),  # مسار التعديل
-    path('groups/delete/<int:pk>/', views.delete_group, name='delete_group'),  # مسار الحذف
-
+    path("groups/delete/<int:pk>/", views.delete_group, name="delete_group"),
 
 ]
 

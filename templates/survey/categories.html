@@ -66,12 +66,12 @@
                       <td>{{ survey.get_category_display }}</td>
                       <td>{{ survey.created_at }}</td>
                       <td>
-                        {% if 'survey.delete_surveys' in user_permissions %}
+                        {% if perms.survey.delete_surveys %}
                         <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
                           <i class="fa-regular fa-trash-can"></i>
                         </a>
                         {% endif %}
-                        {% if 'survey.change_surveys' in user_permissions %}
+                        {% if perms.survey.change_surveys %}
                         <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fa-regular fa-pen-to-square"></i></a>
                         {% endif %}
                         {% comment %} <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fa-regular fa-eye"></i></a> {% endcomment %}
@@ -108,12 +108,12 @@
                       <td>{{ survey.get_category_display }}</td>
                       <td>{{ survey.created_at }}</td>
                       <td>
-                        {% if 'survey.delete_surveys' in user_permissions %}
+                        {% if perms.survey.delete_surveys %}
                         <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
                           <i class="fa-regular fa-trash-can"></i>
                         </a>
                         {% endif %}
-                        {% if 'survey.change_surveys' in user_permissions %}
+                        {% if perms.survey.change_surveys %}
                         <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fa-regular fa-pen-to-square"></i></a>
                         {% endif %}
                         {% comment %} <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fa-regular fa-eye"></i></a> {% endcomment %}
@@ -148,12 +148,12 @@
                       <td>{{ survey.get_category_display }}</td>
                       <td>{{ survey.created_at }}</td>
                       <td>
-                        {% if 'survey.delete_surveys' in user_permissions %}
+                        {% if perms.survey.delete_surveys %}
                         <a href="{% url 'delete_survey' survey.id entity_encoded_id %}" class="btn btn-outline-danger delete-survey">
                           <i class="fa-regular fa-trash-can"></i>
                         </a>
                         {% endif %}
-                        {% if 'survey.change_surveys' in user_permissions %}
+                        {% if perms.survey.change_surveys %}
                         <a href="{% url 'edit_survey' survey.id %}" class="btn btn-outline-warning"><i class="fa-regular fa-pen-to-square"></i></a>
                         {% endif %}
                         {% comment %} <a href="{% url 'view_survey' survey.id %}" class="btn btn-outline-primary"><i class="fa-regular fa-eye"></i></a> {% endcomment %}
