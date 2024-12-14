@@ -1,16 +1,11 @@
 from django.contrib import messages
-from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.urls import reverse
 from .models import *
 from .forms import *
-import pandas as pd
-from django.http import Http404, HttpResponse, JsonResponse
-import csv
-from collections import Counter
+from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.forms.models import model_to_dict
 from django.views.decorators.csrf import csrf_exempt
 from .utils import encode_id, decode_id
@@ -18,6 +13,7 @@ from django.views.decorators.cache import cache_control
 import json
 from django.db.models import Count, F, Q
 from django.db.models.functions import TruncMonth
+from django.contrib.contenttypes.models import ContentType
 
 
 
@@ -50,6 +46,9 @@ def show_categories(request, pk):
     staff_surveys = Surveys.objects.filter(category='staff', entities=entity)
     infrastructure_surveys = Surveys.objects.filter(category='infrastructure', entities=entity)
     systems_surveys = Surveys.objects.filter(category='systems', entities=entity)
+
+    user_permissions = request.user.get_all_permissions()
+
     
     return render(request, 'survey/categories.html', {
         'entity': entity,
@@ -57,6 +56,8 @@ def show_categories(request, pk):
         'staff_surveys': staff_surveys,
         'infrastructure_surveys': infrastructure_surveys,
         'systems_surveys': systems_surveys,
+        'user_permissions': user_permissions,  # تمرير الصلاحيات
+
     })
 
 @login_required
@@ -140,7 +141,6 @@ def submit_survey(request, category, pk):
 @login_required
 def delete_survey(request, survey_id, entity_id):
     # فك تشفير entity_id
-    print(entity_id)
     decoded_entity_id = decode_id(entity_id)
     if decoded_entity_id is None:
         raise Http404("Invalid ID")
@@ -156,6 +156,10 @@ def delete_survey(request, survey_id, entity_id):
 
     # إعادة التوجيه إلى صفحة عرض التصنيفات
     return redirect('categories', entity_id)
+
+
+
+
 
 @login_required
 def show_survey(request, survey_id):
@@ -233,7 +237,7 @@ def add_question(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def questions_list(request):
     if request.method == 'GET':
         # الحصول على التصنيف إذا تم تحديده
@@ -256,16 +260,22 @@ def questions_list(request):
                 } for question in questions
             ]
             return JsonResponse({'success': True, 'questions': questions_data})
+        
+        user_permissions = request.user.get_all_permissions()
+
 
         # إذا كان طلب عادي (غير AJAX)، عرض الصفحة
-        return render(request, 'survey/questions_list.html', {'questions': questions})
+        return render(request, 'survey/questions_list.html', {
+            'questions': questions,
+            'user_permissions':user_permissions,
+            })
 
 
 
 # التعديل
 
 @login_required
-@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def update_question(request, question_id):
     if request.method == 'POST':
         question = get_object_or_404(Question, id=question_id)
@@ -299,7 +309,7 @@ def update_question(request, question_id):
 # الحذف 
 
 @login_required
-@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def delete_question(request, question_id):
     if request.method == 'POST':
         try:
@@ -382,6 +392,11 @@ def get_choices(request, question_id):
 def edit_survey(request, survey_id):
     # الحصول على الاستبيان
     survey = get_object_or_404(Surveys, id=survey_id)
+
+    has_edit_permission = request.user.has_perm('survey.change_surveys')
+    print(request.user.has_perm('survey.change_surveys'))
+    print(has_edit_permission)
+    
     # جلب الإجابات المتعلقة بالاستبيان
     answers = Answer.objects.filter(survey=survey).select_related('question', 'choice_selected')
     
@@ -448,6 +463,7 @@ def edit_survey(request, survey_id):
         'questions': questions,
         'answers': answers,
         'notes': notes,  
+        'has_edit_permission': has_edit_permission,
     })
 
 
@@ -556,13 +572,13 @@ def home(request):
 
 
 
+
 def dashboard(request):
     # الإحصائيات الأساسية
     total_entities = Entitys.objects.count()
     total_surveys = Surveys.objects.count()
     total_questions = Question.objects.count()
     total_answers = Answer.objects.count()
-    print(total_answers,total_questions)
 
     # إحصائيات الاستبيانات حسب الفئات
     surveys_by_category = (
@@ -570,7 +586,14 @@ def dashboard(request):
         .annotate(count=Count('id'))
         .order_by('-count')
     )
-    surveys_by_category_labels = [item['category'] for item in surveys_by_category]
+    # تحويل الفئات إلى الأسماء العربية
+    CATEGORIES_DICT = {
+        'staff': 'الكادر',
+        'infrastructure': 'البنية التحتية',
+        'systems': 'الأنظمة',
+    }
+    
+    surveys_by_category_labels = [CATEGORIES_DICT.get(item['category'], item['category']) for item in surveys_by_category]
     surveys_by_category_data = [item['count'] for item in surveys_by_category]
 
     # إحصائيات الأسئلة حسب النوع
@@ -579,14 +602,21 @@ def dashboard(request):
         .annotate(count=Count('id'))
         .order_by('-count')
     )
-    questions_by_type_labels = [item['question_type'] for item in questions_by_type]
+    # تحويل الأنواع إلى الأسماء العربية
+    QUESTION_TYPES_DICT = {
+        'text': 'نص',
+        'yes_no': 'نعم/لا',
+        'multiple_choice': 'اختيارات متعددة',
+        'radio': 'اختيار واحد',
+    }
+
+    questions_by_type_labels = [QUESTION_TYPES_DICT.get(item['question_type'], item['question_type']) for item in questions_by_type]
     questions_by_type_data = [item['count'] for item in questions_by_type]
 
     # نسبة الإجابات المكتملة لكل استبيان
     surveys_with_completion_rate = []
     surveys = Surveys.objects.all()
     for survey in surveys:
-        # total_questions = survey.answers.count()  
         total_answerss = Answer.objects.filter(survey=survey).count()
         completion_rate = (
             (total_answerss / total_questions * 100) if total_questions > 0 else 0
@@ -606,7 +636,6 @@ def dashboard(request):
     entities_with_surveys_labels = [entity.name for entity in entities_with_surveys]
     entities_with_surveys_data = [entity.survey_count for entity in entities_with_surveys]
 
-
     # عدد الاستبيانات التي تم إنشاؤها لكل شهر
     surveys_by_month = (
         Surveys.objects.annotate(month=TruncMonth('created_at'))
@@ -625,8 +654,7 @@ def dashboard(request):
     top_entities_labels = [entity.name for entity in top_entities_by_answers]
     top_entities_data = [entity.answer_count for entity in top_entities_by_answers]
 
-
-
+    # إرسال البيانات إلى القالب
     context = {
         'total_entities': total_entities,
         'total_surveys': total_surveys,

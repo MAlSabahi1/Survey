@@ -8,8 +8,8 @@
 <div class="container my-4">
   <!-- قسم الترحيب -->
     <div class="welcome-section text-right my-4">
-    <h1>مرحباً، moh!</h1>
-    <p>مرحباً بك في لوحة تحكم نظام الاستبيانات</p>
+        <h1>مرحباً، {{ request.user.username }}!</h1>
+        <p>مرحباً بك في لوحة تحكم نظام الاستبيانات</p>
     </div>
 
     <div class="stats-grid">

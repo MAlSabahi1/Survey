@@ -1,13 +1,15 @@
-{% extends "../base.html" %} {% block content %}
+{% extends "../base.html" %}
+
+{% block content %}
 <div class="container-fluid px-lg-4" dir="rtl">
   <div class="row">
     <!-- قسم التنقل -->
     <div class="col-lg-12 order-lg-1">
       <div class="card border-0 rounded-4">
-      <div class="card-header text-white text-center rounded-top py-4 mb-4">
-        <h3 class="mb-0"><i class="fas fa-users"></i> قائمة المستخدمين</h3>
+        <div class="card-header text-white text-center rounded-top py-4 mb-4">
+          <h3 class="mb-0"><i class="fas fa-users"></i> قائمة المستخدمين</h3>
+        </div>
       </div>
-    </div>
       <!-- قسم البحث -->
       <div class="col-lg-6 order-lg-2 mb-4">
         <div class="search-card rounded d-flex flex-row">
@@ -38,6 +40,7 @@
                   <th>البريد الإلكتروني</th>
                   <th>المجموعات</th>
                   <th>الكيانات</th>
+                  <th>الصلاحيات</th> <!-- عمود جديد للصلاحيات -->
                   <th>إجراءات</th>
                 </tr>
               </thead>
@@ -53,7 +56,13 @@
                   </td>
                   <td>
                     {% for permission in user.entity_permissions.all %}
-                        <span class="badge bg-primary">{{ permission.entity.name }}</span>
+                    <span class="badge bg-primary">{{ permission.entity.name }}</span>
+                    {% endfor %}
+                  </td>
+                  <td>
+                    <!-- عرض الصلاحيات -->
+                    {% for permission in user.get_all_permissions %}
+                    <span class="badge bg-info">{{ permission }}</span>
                     {% endfor %}
                   </td>
                   <td>
@@ -68,7 +77,7 @@
                       class="btn btn-{{ user.is_active|yesno:'outline-danger,outline-success' }} btn-md mb-1"
                     >
                       <i
-                        class="fas fa-toggle-{{ user.is_active|yesno:'off,on' }}"
+                        class="fas fa-toggle-{{ user.is_active|yesno:'off,on' }} "
                       ></i>
                       {% if user.is_active %} تعطيل {% else %} تفعيل {% endif %}
                     </a>
@@ -76,7 +85,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="4" class="text-center text-muted">
+                  <td colspan="6" class="text-center text-muted">
                     لا يوجد مستخدمون
                   </td>
                 </tr>
@@ -89,7 +98,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- تحسين التفاعل -->
 <script>
@@ -112,4 +120,5 @@
     }
   }
 </script>
+
 {% endblock %}

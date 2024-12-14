@@ -33,7 +33,7 @@
 
   </head>
   <body>
-    {% if user.is_authenticated %}
+    {% comment %} {% if user.is_authenticated %} {% endcomment %}
     <div class="layout-nav">
       <!-- زر القائمة في وضع الجوال -->
       <div class="menu-toggle-icon">
@@ -98,39 +98,13 @@
         </a>
       </div>
     </div>
-    {% endif %}
+    {% comment %} {% endif %} {% endcomment %}
     
     <!-- محتوى الصفحة -->
     <div class="content" id="content">{% block content %}{% endblock %}</div>
     
     {% block extra_js %}{% endblock %}
-    {% comment %} <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const sidebar = document.getElementById("sidebar");
-        const content = document.getElementById("content");
-        const sidebarToggleBtn = document.getElementById("overlayBtn");
-        const sidebarTitle = document.getElementById("sidebarTitle");
-
-        if (localStorage.getItem("sidebarCollapsed") === "true") {
-          sidebar.classList.add("collapsed");
-          content.classList.add("collapsed");
-          sidebarTitle.style.display = "none";
-        }
-
-        sidebarToggleBtn.addEventListener("click", function () {
-          sidebar.classList.toggle("collapsed");
-          content.classList.toggle("collapsed");
-          sidebarTitle.style.display = sidebar.classList.contains("collapsed")
-            ? "none"
-            : "block";
-
-          localStorage.setItem(
-            "sidebarCollapsed",
-            sidebar.classList.contains("collapsed")
-          );
-        });
-      });
-    </script> {% endcomment %}
+ 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const sidebar = document.getElementById("sidebar");

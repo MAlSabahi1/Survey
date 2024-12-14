@@ -65,22 +65,26 @@
                 {% endif %}
               </td>
               <td>
+                {% if 'survey.change_question' in user_permissions %}
                 <button
-                  class="btn btn-outline-warning edit-question-btn"
-                  data-id="{{ question.id }}"
-                  data-text="{{ question.text }}"
-                  data-type="{{ question.question_type }}"
-                  data-category="{{ question.category }}"
-                  data-active="{{ question.is_active }}"
+                class="btn btn-outline-warning edit-question-btn"
+                data-id="{{ question.id }}"
+                data-text="{{ question.text }}"
+                data-type="{{ question.question_type }}"
+                data-category="{{ question.category }}"
+                data-active="{{ question.is_active }}"
                 >
                 <i class="fa-regular fa-pen-to-square"></i>
-                </button>
-                <button
-                  class="btn btn-outline-danger delete-question-btn"
-                  data-id="{{ question.id }}"
-                >
-                <i class="fa-regular fa-trash-can"></i>
-                </button>
+            </button>
+            {% endif %}
+            {% if 'survey.delete_question' in user_permissions %}
+            <button
+            class="btn btn-outline-danger delete-question-btn"
+            data-id="{{ question.id }}"
+            >
+            <i class="fa-regular fa-trash-can"></i>
+        </button>
+        {% endif %}
               </td>
             </tr>
             {% endfor %}
