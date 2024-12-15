@@ -10,25 +10,25 @@
           <h3 class="mb-0"><i class="fas fa-users"></i> قائمة المستخدمين</h3>
         </div>
       </div>
-      <!-- قسم البحث -->
-      <div class="col-lg-6 order-lg-2 mb-4">
-        <div class="search-card rounded d-flex flex-row">
-          <div class="w-100 d-flex justify-content-start">
-            <input
-              type="text"
-              id="searchInput"
-              class="form-control mx-2"
-              style="max-width: 400px"
-              placeholder="ابحث عن المستخدم..."
-              oninput="filterTable()"
-            />
-            <button class="btn btn-primary mx-2 px-3">
-              <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      <div class="row mb-4 align-items-center">
+     <!-- حقل البحث -->
+<div class="col-12 col-md-6">
+  <label for="searchInput" class="form-label fw-bold">بحث:</label>
+  <input
+    type="text"
+    id="searchInput"
+    class="form-control"
+    placeholder="ابحث عن المستخدم..."
+    oninput="filterTable()"
+  />
+</div>
 
+      <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity">
+        <a href="{% url 'create_user'%}" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-plus"></i> إضافة مستخدم جديد
+        </a>
+      </div>
+    </div>
       <!-- جدول المستخدمين -->
       <div class="card rounded-4 border-0">
         <div class="card-body">
@@ -81,6 +81,15 @@
                       ></i>
                       {% if user.is_active %} تعطيل {% else %} تفعيل {% endif %}
                     </a>
+                    {% if request.user.is_superuser %}
+                    <button
+                      class="btn btn-outline-danger btn-md mb-1 delete-user-btn"
+                      data-id="{{ user.id }}"
+                      data-username="{{ user.username }}"
+                    >
+                      <i class="fas fa-trash"></i> حذف
+                    </button>
+                    {% endif %}
                   </td>
                 </tr>
                 {% empty %}
@@ -99,6 +108,74 @@
   </div>
 </div>
 
+<style>
+  @media (max-width:768px){
+    .row{
+      flex-direction: column-reverse;
+      gap:1.5rem;
+    }
+    .add-entity{
+      justify-content: center !important;
+      
+    }
+  }
+</style>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // التعامل مع زر الحذف
+    const deleteButtons = document.querySelectorAll(".delete-user-btn");
+
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const userId = this.getAttribute("data-id");
+        const username = this.getAttribute("data-username");
+
+        // عرض نافذة التأكيد
+        Swal.fire({
+          title: "هل أنت متأكد؟",
+          text: `هل تريد حذف المستخدم "${username}"؟`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "حذف",
+          cancelButtonText: "إلغاء",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // إرسال طلب الحذف عبر Ajax
+            fetch(`/accounts/user/delete/${userId}/`, {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => {
+                if (response.ok) {
+                  Swal.fire(
+                    "تم الحذف!",
+                    `تم حذف المستخدم "${username}".`,
+                    "success"
+                  );
+                  // تحديث الصفحة أو إزالة الصف
+                  this.closest("tr").remove();
+                } else {
+                  Swal.fire(
+                    "خطأ!",
+                    "حدث خطأ أثناء محاولة حذف المستخدم.",
+                    "error"
+                  );
+                }
+              })
+              .catch(() => {
+                Swal.fire("خطأ!", "فشل الاتصال بالخادم.", "error");
+              });
+          }
+        });
+      });
+    });
+  });
+</script>
 <!-- تحسين التفاعل -->
 <script>
   function filterTable() {

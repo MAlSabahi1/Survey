@@ -22,13 +22,15 @@
           style="border-radius: 0.375rem 0 0 0.375rem"
           />
         </div>
-
+        
+        {% if perms.survey.add_entitys %}
         <!-- زر لإضافة كيان جديد -->
         <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity">
           <a href="{% url 'create_entitys' %}" class="btn btn-primary btn-lg">
             <i class="fa-solid fa-plus"></i> إضافة كيان جديد
           </a>
         </div>
+        {% endif %}
       </div>
       <!-- بطاقة عرض الكيانات مع تحسينات -->
       <div class="card rounded-4 border-0">
@@ -57,6 +59,7 @@
                     {% endif %}
                   </td>
                   <td>
+                    {% if perms.survey.change_entitys %}
                     <button
                       class="btn btn-outline-warning edit-entity-btn"
                       data-id="{{ entity.id }}"
@@ -64,12 +67,15 @@
                     >
                     <i class="fa-regular fa-pen-to-square"></i>
                     </button>
+                    {% endif %}
+                    {% if perms.survey.delete_entitys %}
                     <button
-                      class="btn btn-outline-danger delete-entity-btn"
-                      data-id="{{ entity.id }}"
+                    class="btn btn-outline-danger delete-entity-btn"
+                    data-id="{{ entity.id }}"
                     >
                     <i class="fa-regular fa-trash-can"></i>
-                    </button>
+                  </button>
+                  {% endif %}
                   </td>
                 </tr>
                 {% endfor %}

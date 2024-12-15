@@ -44,20 +44,9 @@
 
   <!-- الرسوم البيانية -->
   <div class="row mt-5 g-4">
-    <!-- توزيع الاستبيانات حسب الفئات -->
-    <div class="col-12 col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-header text-center bg-light">
-          <h5 class="mb-0 text-white">توزيع الاستبيانات حسب الفئات</h5>
-        </div>
-        <div class="card-body">
-          <canvas id="surveysByCategoryChart"></canvas>
-        </div>
-      </div>
-    </div>
 
     <!-- توزيع الأسئلة حسب النوع -->
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-lg-4">
       <div class="card shadow-sm">
         <div class="card-header text-center bg-light">
           <h5 class="mb-0 text-white">توزيع الأسئلة حسب النوع</h5>
@@ -68,6 +57,29 @@
       </div>
     </div>
 
+        <!-- الكيانات المرتبطة بأكبر عدد من الاستبيانات -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5 class="mb-0 text-white">الكيانات المرتبطة بأكبر عدد من الاستبيانات</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="entitiesBySurveysChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+                <h5 class="mb-0 text-white">إجمالي عدد المستخدمين: {{ total_users }}</h5>
+            </div>
+            <div class="card-body">
+                <!-- إضافة عنصر canvas للرسم -->
+                <canvas id="usersChart"></canvas>
+            </div>
+        </div>
+    </div>
     <!-- نسبة الإجابات المكتملة لكل استبيان -->
     <div class="col-12 col-lg-6">
       <div class="card shadow-sm">
@@ -80,19 +92,7 @@
       </div>
     </div>
 
-    <!-- الكيانات المرتبطة بأكبر عدد من الاستبيانات -->
-    <div class="col-12 col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-header text-center bg-light">
-          <h5 class="mb-0 text-white">الكيانات المرتبطة بأكبر عدد من الاستبيانات</h5>
-        </div>
-        <div class="card-body">
-          <canvas id="entitiesBySurveysChart"></canvas>
-        </div>
-      </div>
-    </div>
 
-    <div class="row mt-5 g-4">
         <!-- عدد الاستبيانات لكل شهر -->
         <div class="col-12 col-lg-6">
           <div class="card shadow-sm">
@@ -106,7 +106,7 @@
         </div>
       
         <!-- أكثر الكيانات مشاركة بالإجابات -->
-        <div class="col-12 col-lg-6">
+        <div class="col-12 col-lg-4">
           <div class="card shadow-sm">
             <div class="card-header text-center bg-light">
               <h5 class="mb-0 text-white">أكثر الكيانات مشاركة بالإجابات</h5>
@@ -116,16 +116,41 @@
             </div>
           </div>
         </div>
+
+            <!-- توزيع الاستبيانات حسب الفئات -->
+    <div class="col-12 col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header text-center bg-light">
+            <h5 class="mb-0 text-white">توزيع الاستبيانات حسب الفئات</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="surveysByCategoryChart"></canvas>
+          </div>
+        </div>
+      </div>
       
-      
+        <!-- رسم بياني لعدد الاستبيانات التي أنشأها كل مستخدم -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+                <h5 class="mb-0 text-white">عدد الاستبيانات التي أنشأها كل مستخدم</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="surveysByUserChart"></canvas>
+            </div>
+            </div>
+        </div>
+
+
+
+        
+
+
 
 </div>
 
-<!-- تضمين Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- تضمين Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
   // بيانات الرسوم البيانية من العرض
   const surveysByCategoryLabels = {{ surveys_by_category_labels|safe }};
@@ -260,9 +285,101 @@
     options: { responsive: true }
   });
 
+  
+  // رسم عدد الاستبيانات التي أنشأها كل مستخدم
+  const surveysByUserLabels = {{ surveys_by_user_labels|safe }};
+  const surveysByUserData = {{ surveys_by_user_data|safe }};
+
+  const ctx5 = document.getElementById('surveysByUserChart').getContext('2d');
+  new Chart(ctx5, {
+    type: 'bar',  // الرسم البياني من نوع Bar
+    data: {
+      labels: surveysByUserLabels,  // أسماء المستخدمين
+      datasets: [{
+        label: 'عدد الاستبيانات',
+        data: surveysByUserData,  // عدد الاستبيانات لكل مستخدم
+        backgroundColor: '#ff6f61',  // لون شريط الرسم البياني
+        borderColor: '#e74a3b',  // لون الحدود
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },  // إخفاء legend
+        tooltip: { enabled: true }  // تمكين tooltips
+      },
+      scales: {
+        y: {
+          beginAtZero: true  // بدء المحور Y من الصفر
+        }
+      }
+    }
+  });
+
+
+
+    // بيانات المستخدمين
+    const usersLabels = {{ users_labels|safe }};
+    const usersData = {{ users_data|safe }};
+
+    // تحقق من البيانات في console
+    console.log(usersLabels);
+    console.log(usersData);
+
+    // إعداد الرسم البياني باستخدام Chart.js
+    var ctx = document.getElementById('usersChart').getContext('2d');
+
+    var chart = new Chart(ctx, {
+        type: 'doughnut', // نوع الرسم البياني هو Doughnut (دائرة داخلية)
+        data: {
+            labels: usersLabels,
+            datasets: [{
+                data: usersData,
+                backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#57FF33'], // ألوان مخصصة
+                hoverOffset: 4, // تأثير عند التمرير فوق القطاعات
+                borderWidth: 2, // عرض حدود القطاعات
+                borderColor: '#fff', // لون الحدود
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom', // وضع الأسطورة أسفل الرسم البياني
+                    labels: {
+                        font: {
+                            size: 14,
+                            family: 'Arial', // نوع الخط
+                            weight: 'bold', // وزن الخط
+                        },
+                        padding: 10, // المسافة بين الأسطورة والعناصر
+                    }
+                },
+                tooltip: {
+                    enabled: true, // تمكين أداة التلميح عند التمرير
+                    backgroundColor: '#333', // لون خلفية التلميح
+                    titleColor: '#fff', // لون العنوان
+                    bodyColor: '#fff', // لون النص
+                }
+            },
+            cutout: '70%', // تقليل الفجوة داخل الدائرة
+            animation: {
+                animateScale: true, // تفعيل الأنيميشن عند التحميل
+                animateRotate: true, // تفعيل التحريك عند التدوير
+            },
+            elements: {
+                arc: {
+                    borderWidth: 3, // سمك حدود القطاع
+                }
+            }
+        }
+    });
+
 
     </script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 
 {% endblock %}

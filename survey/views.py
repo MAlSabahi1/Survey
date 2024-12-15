@@ -578,6 +578,25 @@ def dashboard(request):
     total_questions = Question.objects.count()
     total_answers = Answer.objects.count()
 
+
+
+    # إحصائيات المستخدمين
+    users = User.objects.all()
+    users_labels = [user.username for user in users]
+    users_data = [1 for _ in users]  # نستخدم 1 كقيمة ثابتة لكل مستخدم لتمثيل كل واحد في الرسم البياني
+
+
+    # إحصائيات عدد الاستبيانات التي أنشأها كل مستخدم
+    surveys_by_user = (
+        Surveys.objects.values('user__username')  # استخدمنا user__username للوصول إلى اسم المستخدم
+        .annotate(count=Count('id'))  # عدد الاستبيانات التي أنشأها كل مستخدم
+        .order_by('-count')
+    )
+
+    surveys_by_user_labels = [item['user__username'] for item in surveys_by_user]
+    surveys_by_user_data = [item['count'] for item in surveys_by_user]
+
+
     # إحصائيات الاستبيانات حسب الفئات
     surveys_by_category = (
         Surveys.objects.values('category')
@@ -670,6 +689,11 @@ def dashboard(request):
         'surveys_by_month_data': json.dumps(surveys_by_month_data),
         'top_entities_labels': json.dumps(top_entities_labels),
         'top_entities_data': json.dumps(top_entities_data),
+        'surveys_by_user_labels': json.dumps(surveys_by_user_labels),
+        'surveys_by_user_data': json.dumps(surveys_by_user_data),
+        'users_labels': json.dumps(users_labels),
+        'users_data': json.dumps(users_data),
+        'total_users': len(users),
     }
 
     return render(request, 'survey/dashboard.html', context)

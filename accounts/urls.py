@@ -7,6 +7,7 @@ urlpatterns = [
     path('user/create/', views.create_user, name='create_user'),
     path('user/<int:user_id>/edit/', views.editUsers, name='edit_user'),
     path('user/list/', views.user_list, name='user_list'),  # Add this line for user list
+    path('user/delete/<int:id>/', views.delete_user, name='delete_user'),
     path('group/create/', views.create_group, name='create_group'),
     path('group/<int:group_id>/edit/', views.edit_group, name='edit_group'),
     path('group/list/', views.group_list, name='group_list'),  # Add this line for group list

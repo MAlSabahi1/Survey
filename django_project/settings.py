@@ -123,3 +123,6 @@ LOGIN_REDIRECT_URL = "/"  # new
 LOGOUT_REDIRECT_URL = "login"  # new
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+CSRF_COOKIE_SECURE = False  # إذا كنت تستخدم بيئة تطوير محلية، تأكد من تعطيل CSRF_COOKIE_SECURE
+

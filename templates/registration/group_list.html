@@ -11,7 +11,7 @@
         </div>
       </div>
 
-      <!-- قسم البحث وإضافة مجموعة جديدة -->
+      {% comment %} <!-- قسم البحث وإضافة مجموعة جديدة -->
       <div class="col-12 d-flex justify-content-between mb-4">
         <!-- قسم البحث -->
         <div class="col-lg-6 order-lg-1 align-content-center">
@@ -39,7 +39,30 @@
             </a>
           </div>
         </div>
+      </div> {% endcomment %}
+
+      <div class="row mb-4 align-items-center">
+        <!-- حقل البحث -->
+        <div class="col-12 col-md-6">
+          <label for="searchInput" class="form-label fw-bold">بحث:</label>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control mx-2"
+            style="max-width: 400px"
+            placeholder="ابحث عن المجموعة..."
+            oninput="filterTable()"
+          />
+        </div>
+      
+        <!-- زر إضافة مستخدم جديد -->
+        <div class="col-12 col-md-6 d-flex justify-content-end mb-2 add-entity">
+          <a href="{% url 'create_group' %}" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-plus"></i> إضافة مجموعة جديدة
+          </a>
+        </div>
       </div>
+      
 
       <!-- جدول عرض المجموعات -->
       <div class="card rounded-4 border-0">
@@ -88,6 +111,18 @@
   </div>
 </div>
 
+<style>
+  @media (max-width:768px){
+    .row{
+      flex-direction: column-reverse;
+      gap:1.5rem;
+    }
+    .add-entity{
+      justify-content: center !important;
+      
+    }
+  }
+</style>
 <!-- تحسين التفاعل -->
 <script>
   function filterTable() {

@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test, per
 from survey.models import *
 from django.contrib.auth import logout, login
 from django.views.decorators.csrf import csrf_exempt
-
+import json
 
 
 class SignUpView(generic.CreateView):
@@ -153,6 +153,20 @@ def delete_group(request, pk):
 def user_list(request):
     users = User.objects.all()  # Get all users
     return render(request, 'registration/user_list.html', {'users': users})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser, login_url='/')  # التحقق من أن المستخدم مشرف
+@csrf_exempt  # السماح بمعالجة طلبات Ajax
+def delete_user(request, id):
+    if request.method == "POST":
+        try:
+            user = User.objects.get(id=id)
+            user.delete()
+            return JsonResponse({"message": "تم حذف المستخدم بنجاح."}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "المستخدم غير موجود."}, status=404)
+    return JsonResponse({"error": "طلب غير صالح."}, status=400)
 
 
 @login_required
