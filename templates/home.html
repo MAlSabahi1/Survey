@@ -82,15 +82,17 @@
   </div>
 </div>
 
+<style>
+  /* تعديل الظلال خلف الـ modal */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.8); /* قم بتعديل هذا الرقم للتحكم في مستوى التعتيم (0.0 إلى 1.0) */
+}
 
-  <!-- Adding AOS Library -->
-  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-
+/* تعديل مستوى التعتيم عند عرض الـ modal */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+</style>
   <script>
     AOS.init();
   </script>

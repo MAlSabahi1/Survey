@@ -132,10 +132,11 @@
                   class="form-control"
                   id="editText"
                   name="text"
-                  required
                   placeholder="أدخل نص السؤال"
                 />
+                <div class="invalid-feedback" id="editTextError"></div>
               </div>
+
 
               <!-- نوع السؤال -->
               <div class="col-md-6">
@@ -488,57 +489,71 @@
 
     // عند إرسال النموذج
     $("#editQuestionForm").on("submit", function (e) {
-      e.preventDefault();
+        e.preventDefault();
+      
+        const questionId = $("#editQuestionId").val();
+        const formData = $(this).serialize();
+      
+        // إضافة قيمة is_active بناءً على حالة التبديل (checkbox)
+        const isActive = $("#editIsActive").prop("checked") ? "True" : "False"; // تحويل حالة التبديل إلى True/False
+      
+        $.ajax({
+          url: `/update_question/${questionId}/`,
+          type: "POST",
+          data: formData + `&is_active=${isActive}`, // إضافة is_active إلى بيانات النموذج
+          success: function (response) {
+            if (response.success) {
+              // إذا كان التعديل ناجحًا
+              // عند حدوث النجاح
+                $("#editText").removeClass("is-invalid");
+                $("#editTextError").text("يرجى إدخال نص السؤال.");
 
-      const questionId = $("#editQuestionId").val();
-      const formData = $(this).serialize();
-
-      // إضافة قيمة is_active بناءً على حالة التبديل (checkbox)
-      const isActive = $("#editIsActive").prop("checked") ? "True" : "False"; // تحويل حالة التبديل إلى True/False
-
-      $.ajax({
-        url: `/update_question/${questionId}/`,
-        type: "POST",
-        data: formData + `&is_active=${isActive}`, // إضافة is_active إلى بيانات النموذج
-        success: function (response) {
-          if (response.success) {
-            // تحديث بيانات الجدول
-            const row = $(`#questionRow-${questionId}`);
-            row.find("td:nth-child(2)").text($("#editText").val());
-            row
-              .find("td:nth-child(3)")
-              .text($("#editType option:selected").text());
-            row
-              .find("td:nth-child(4)")
-              .text($("#editCategory option:selected").text());
-
-            // تحديث حالة "نشط" بناءً على القيمة المرسلة
-            row
-              .find("td:nth-child(5)")
-              .html(
-                isActive === "True"
-                  ? '<span class="badge bg-success text-white">نشط</span>'
-                  : '<span class="badge bg-secondary text-white">غير نشط</span>'
-              );
-
-            // إغلاق الـ Modal وعرض رسالة نجاح
-            $("#editQuestionModal").modal("hide");
-            toastr.success(response.message, "", {
-              positionClass: "toast-top-right",
-              timeOut: 2000,
-            });
-          } else {
-            toastr.error(response.message, "", {
-              positionClass: "toast-top-right",
-              timeOut: 2000,
-            });
-          }
-        },
-        error: function () {
-          toastr.error("حدث خطأ أثناء تعديل السؤال. يرجى المحاولة لاحقًا.");
-        },
+              // تحديث بيانات الجدول
+              const row = $(`#questionRow-${questionId}`);
+              row.find("td:nth-child(2)").text($("#editText").val());
+              row
+                .find("td:nth-child(3)")
+                .text($("#editType option:selected").text());
+              row
+                .find("td:nth-child(4)")
+                .text($("#editCategory option:selected").text());
+      
+              // تحديث حالة "نشط" بناءً على القيمة المرسلة
+              row
+                .find("td:nth-child(5)")
+                .html(
+                  isActive === "True"
+                    ? '<span class="badge bg-success text-white">نشط</span>'
+                    : '<span class="badge bg-secondary text-white">غير نشط</span>'
+                );
+      
+              // إغلاق الـ Modal وعرض رسالة نجاح
+              $("#editQuestionModal").modal("hide");
+              toastr.success(response.message, "", {
+                positionClass: "toast-top-right",
+                timeOut: 2000,
+              });
+            } else {
+              // عرض الأخطاء في حال حدوثها
+              if (response.errors) {
+                if (response.errors.text) {
+                  // إضافة رسالة الخطأ لنص السؤال
+                  $("#editText").addClass("is-invalid");
+                  $("#editTextError").text("يرجى إدخال نص السؤال.");
+                }
+              }
+              toastr.error(response.message, "", {
+                positionClass: "toast-top-right",
+                timeOut: 2000,
+              });
+            }
+          },
+          error: function () {
+            toastr.error("حدث خطأ أثناء تعديل السؤال. يرجى المحاولة لاحقًا.");
+          },
+        });
       });
-    });
+      
 
     // تحديث الخيارات عند تغيير نوع السؤال
     $("#editType").on("change", function () {

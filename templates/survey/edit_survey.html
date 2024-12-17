@@ -4,8 +4,9 @@
 {% block content %}
 <div class="container" dir="rtl">
   <!-- Title Section -->
+
   <div class="card-header text-white text-center rounded-top py-4 mb-4">
-    <h3 class="text-center mb-0" >
+    <h3 class="text-center mb-0" style="color: #fff; font-weight: bold; letter-spacing: 0.05em">
       <i class="fa-regular fa-circle-question"></i> تعديل الاستبيان
     </h3>
   </div>
@@ -33,77 +34,108 @@
             <h5 class="card-title mb-3" style="font-size: 1.1rem; color: #34495e; font-weight: bold">
               {{ forloop.counter }}. {{ question.text }}
             </h5>
+            
             <div class="mt-3">
-            <!-- Question Field Based on Type -->
-            {% if question.question_type == 'text' %}
-            <input
-              type="text"
-              name="question_{{ question.id }}"
-              value="{{ answers|get_answer_text:question.id }}"
-              class="form-control p-3 border-1 shadow-sm rounded-3"
-              placeholder="أدخل إجابتك هنا"
-            />
-            {% elif question.question_type == 'yes_no' %}
-            <div class="form-check">
-              <input
-                type="radio"
-                name="question_{{ question.id }}"
-                value="yes"
-                id="yes_{{ question.id }}"
-                class="form-check-input"
-                {% if answers|get_answer_text:question.id == 'yes' %}checked{% endif %}
-              />
-              <label class="form-check-label" for="yes_{{ question.id }}">نعم</label>
-            </div>
-            <div class="form-check mb-2">
-              <input
-                type="radio"
-                name="question_{{ question.id }}"
-                value="no"
-                id="no_{{ question.id }}"
-                class="form-check-input"
-                {% if answers|get_answer_text:question.id == 'no' %}checked{% endif %}
-              />
-              <label class="form-check-label" for="no_{{ question.id }}">لا</label>
-            </div>
-            {% elif question.question_type == 'multiple_choice' or question.question_type == 'radio' %}
-            {% for choice in question.choices.all %}
-            <div class="form-check mb-2">
-              <input
-                type="{% if question.question_type == 'radio' %}radio{% else %}checkbox{% endif %}"
-                name="question_{{ question.id }}"
-                value="{{ choice.id }}"
-                id="choice_{{ choice.id }}"
-                class="form-check-input"
-                {% if choice.id in answers|get_selected_choices:question.id %}checked{% endif %}
-              />
-              <label class="form-check-label" for="choice_{{ choice.id }}">{{ choice.text }}</label>
-            </div>
-            {% endfor %}
-            {% endif %}
-                <!-- إضافة حقل إدخال للملاحظات -->
+              <!-- Question Field Based on Type -->
+              {% if question.question_type == 'text' %}
+                <input
+                  type="text"
+                  name="question_{{ question.id }}"
+                  value="{{ answers|get_answer_text:question.id }}"
+                  class="form-control p-3 border-1 shadow-sm rounded-3"
+                  placeholder="أدخل إجابتك هنا"
+                />
+              {% elif question.question_type == 'yes_no' %}
+                <div class="form-check">
+                  <input
+                    type="radio"
+                    name="question_{{ question.id }}"
+                    value="yes"
+                    id="yes_{{ question.id }}"
+                    class="form-check-input"
+                    {% if answers|get_answer_text:question.id == 'yes' %}checked{% endif %}
+                  />
+                  <label class="form-check-label" for="yes_{{ question.id }}">نعم</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input
+                    type="radio"
+                    name="question_{{ question.id }}"
+                    value="no"
+                    id="no_{{ question.id }}"
+                    class="form-check-input"
+                    {% if answers|get_answer_text:question.id == 'no' %}checked{% endif %}
+                  />
+                  <label class="form-check-label" for="no_{{ question.id }}">لا</label>
+                </div>
+              {% elif question.question_type == 'multiple_choice' or question.question_type == 'radio' %}
+                {% for choice in question.choices.all %}
+                  <div class="form-check mb-2">
+                    <input
+                      type="{% if question.question_type == 'radio' %}radio{% else %}checkbox{% endif %}"
+                      name="question_{{ question.id }}"
+                      value="{{ choice.id }}"
+                      id="choice_{{ choice.id }}"
+                      class="form-check-input"
+                      {% if choice.id in answers|get_selected_choices:question.id %}checked{% endif %}
+                    />
+                    <label class="form-check-label" for="choice_{{ choice.id }}">{{ choice.text }}</label>
+                  </div>
+                {% endfor %}
+              {% endif %}
+              
+              <!-- إضافة حقل إدخال للملاحظات إذا كان هناك ملاحظة -->
+              {% if notes|get_item:question.id %}
                 <textarea
-                name="note_{{ question.id }}"
-                class="form-control mt-3"
-                placeholder="أدخل ملاحظتك هنا">{{ notes|get_item:question.id }}</textarea>
+                  name="note_{{ question.id }}"
+                  class="form-control mt-3"
+                  placeholder="أدخل ملاحظتك هنا">{{ notes|get_item:question.id }}</textarea>
+              {% endif %}
+              
+              <!-- تحقق من الإجابة وعرض الرسالة إذا كانت الإجابة غير موجودة -->
+              {% if question.question_type == 'text' %}
+                {% if not answers|get_answer_text:question.id %}
+                  <div class="alert alert-warning mt-2 p-2" style="font-size: 0.9rem; color: #e74c3c; background-color: #f8d7da; border-color: #f5c6cb;">
+                    <strong><i class="bi bi-exclamation-triangle-fill"></i></strong> لم يتم الإجابة على هذا السؤال.
+                  </div>
+                {% endif %}
+              {% elif question.question_type == 'yes_no' %}
+                {% if not answers|get_answer_text:question.id %}
+                  <div class="alert alert-warning mt-2 p-2" style="font-size: 0.9rem; color: #e74c3c; background-color: #f8d7da; border-color: #f5c6cb;">
+                    <strong><i class="bi bi-exclamation-triangle-fill"></i></strong> لم يتم الإجابة على هذا السؤال.
+                  </div>
+                {% endif %}
+              {% elif question.question_type == 'multiple_choice' or question.question_type == 'radio' %}
+                {% if not answers|get_selected_choices:question.id %}
+                  <div class="alert alert-warning mt-2 p-2" style="font-size: 0.9rem; color: #e74c3c; background-color: #f8d7da; border-color: #f5c6cb;">
+                    <strong><i class="bi bi-exclamation-triangle-fill"></i></strong> لم يتم الإجابة على هذا السؤال.
+                  </div>
+                {% endif %}
+              {% endif %}
+              
+            </div>
           </div>
         </div>
-        </div>
       </div>
-      {% endfor %}
+    {% endfor %}
+    
+    
     </div>
 
-    <!-- Submit Button -->
-    <div class="text-center mt-5">
-      <button type="submit" class="btn btn-primary btn-lg px-5 py-3" >
+  <!-- Sticky Action Bar -->
+  <div class="sticky-bottom" style="bottom:0; position:sticky;background:#e7ebef;border-radius:15px 15px 0 0 ;">
+    <div class="d-flex justify-content-between align-items-center p-4 shadow-sm">
+      <button type="submit" class="btn btn-primary px-5 py-3">
         حفظ التعديلات
       </button>
+      <button type="button" id="print-button" class="btn btn-secondary px-5 py-3">طباعة</button>
     </div>
+  </div>
+
   </form>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
   // عرض رسالة تأكيد أولاً
@@ -146,7 +178,80 @@
     });
   });
 </script>
-
+<script>
+    // إضافة وظيفة الطباعة
+    document.getElementById('print-button').addEventListener('click', function () {
+      const contentToPrint = document.querySelector('.row.g-4'); // تحديد محتوى الأسئلة والإجابات فقط
+      const printWindow = window.open('', '', 'height=600,width=800');
+      printWindow.document.write('<html><head><title>طباعة الاستبيان</title>');
+      printWindow.document.write('<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">');
+      // إضافة الأنماط الخاصة بالصفحة لتتضمن تصميم الصفحة أثناء الطباعة
+      printWindow.document.write('<style>');
+        printWindow.document.write('body { font-family: "Tajawal", sans-serif; font-size: 16px; line-height: 1.6; margin: 0; padding: 0; direction: rtl; }');
+        printWindow.document.write('.container { width: 100%; }');
+      printWindow.document.write('.card { border: 1px solid #ddd; padding: 20px; margin-bottom: 15px; background-color: #f9f9f9; }');
+      printWindow.document.write('.card-header { background-color: #4b6282; color: white; font-size: 1.2rem; font-weight: bold; padding: 20px 40px; text-align: center; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }');
+      printWindow.document.write('.card-header h3 { margin: 0; }');
+      printWindow.document.write('.form-control { border-radius: 4px; padding: 10px; width: 100%; margin-bottom: 15px;border: 1px solid #ced4da; }');
+      printWindow.document.write('.form-check { margin-bottom: 10px; }');
+      printWindow.document.write('.form-check-label { margin-right: 10px; }');
+      printWindow.document.write('.form-group { margin-bottom: 20px; }');
+      printWindow.document.write('.card-title { font-weight: bold; color: #34495e; margin-bottom: 10px; }');
+      printWindow.document.write('.col-6 { width: 47%; display: inline-block; padding: 10px; vertical-align: top; }');
+      printWindow.document.write('.row { display: flex; flex-wrap: wrap; justify-content: space-between; }');
+      printWindow.document.write('.header-info { font-size: 1rem; color: #fff; }');
+      printWindow.document.write('.header-info span { display: block; margin-top: 5px; font-size: 0.9rem; }');
+      printWindow.document.write('</style>');
+  
+      // إضافة محتوى الطباعة
+      printWindow.document.write('</head><body>');
+      printWindow.document.write('<div class="container">');
+  
+      // إضافة card-header لعرض اسم الاستبيان، الكيان المرتبط وتاريخ الإنشاء
+      printWindow.document.write('<div class="card card-header">');
+      printWindow.document.write('<h3>' + '{{ survey.name }}' + '</h3>'); // اسم الاستبيان
+      printWindow.document.write('<div class="header-info">');
+      // عرض الكيان المرتبط و التعامل مع حالة عدم توفره
+      printWindow.document.write('<span>{{ survey.entities.first.name }}</span>'); 
+      // عرض تاريخ الإنشاء مع الساعة والدقيقة
+      // عرض تاريخ ووقت الطباعة الفعلي
+      const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const formattedTime = currentDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      printWindow.document.write('<span>تاريخ : ' + formattedDate + ' ' + formattedTime + '</span>'); 
+      printWindow.document.write('</div>');
+      printWindow.document.write('</div>');    printWindow.document.write('</div>');
+      printWindow.document.write('</div>');
+  
+      printWindow.document.write('<div class="row">');
+  
+      // تقسيم الأسئلة إلى عمودين بحيث يتم عرض كل سؤالين بجانب بعض
+      const questions = document.querySelectorAll('.card');
+      questions.forEach((question, index) => {
+        if (index % 2 === 0 && index !== 0) {
+          printWindow.document.write('</div><div class="row">'); // بدء صف جديد بعد كل سؤالين
+        }
+        printWindow.document.write('<div class="col-6">');
+        printWindow.document.write('<div class="card">'); // إضافة card لكل سؤال
+        printWindow.document.write('<div class="card-body">');
+        printWindow.document.write(question.innerHTML); // إضافة محتوى السؤال والإجابة
+        printWindow.document.write('</div>'); // إغلاق card-body
+        printWindow.document.write('</div>'); // إغلاق card
+        printWindow.document.write('</div>');
+      });
+  
+      // إذا كان عدد الأسئلة فرديًا سيتم إضافة صف فارغ في النهاية
+      if (questions.length % 2 !== 0) {
+        printWindow.document.write('<div class="col-6"></div>'); // إضافة عمود فارغ في حالة الأسئلة الفردية
+      }
+  
+      printWindow.document.write('</div>'); // إغلاق الـ row
+      printWindow.document.write('</div>'); // إغلاق الـ container
+      printWindow.document.write('</body></html>');
+      printWindow.document.close(); // إغلاق نافذة الطباعة بعد الطباعة
+      printWindow.print(); // بدء الطباعة
+    });
+</script>
 <script>
   // Show the toast notification after form submission
   const form = document.getElementById('survey-form');
@@ -159,11 +264,6 @@
     setTimeout(function() {
       form.submit(); // Submit the form after toast is displayed
     }, 1500); // Adjust the timeout to match the toast display duration
-  });
-</script>
-<script>
-  document.getElementById('print-button').addEventListener('click', function () {
-    window.print();
   });
 </script>
 

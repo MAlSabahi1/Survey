@@ -98,7 +98,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+
+# في settings.py
+LANGUAGES = [
+    ('ar', 'Arabic'),
+    # اللغات الأخرى التي ترغب في دعمها
+]
+
+LANGUAGE_CODE = 'ar'  # تعيين اللغة العربية
+
+
+# LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
 

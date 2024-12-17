@@ -30,20 +30,39 @@ def logout_view(request):
 def is_admin(user):
     return user.is_authenticated and user.is_staff
 
+
+
 @login_required
 @permission_required('survey.add_user', raise_exception=True)
 def create_user(request):
     if request.method == 'POST':
         form = UserForm(request.POST)
+        
         if form.is_valid():
             user = form.save()  # حفظ المستخدم
+            
             # حفظ الكيانات المرتبطة
             entities = form.cleaned_data['entities']
             for entity in entities:
                 UserEntityPermission.objects.create(user=user, entity=entity)
-            return redirect('user_list')  # إعادة التوجيه إلى قائمة المستخدمين
+            
+            # إرسال استجابة نجاح عبر JSON
+            return JsonResponse({
+                'success': True,
+                'message': 'تم إنشاء المستخدم بنجاح!',
+                'redirect_url': '/accounts/user/list/'  # قم بتعديل هذا الـ URL بناءً على التطبيق الخاص بك
+            })
+        else:
+            # إذا كانت هناك أخطاء في النموذج، يتم إرجاعها في استجابة JSON
+            errors = {field: form.errors.get(field) for field in form.errors}
+            return JsonResponse({
+                'success': False,
+                'errors': errors
+            })
+    
     else:
         form = UserForm()
+    
     return render(request, 'registration/create_user.html', {'form': form})
 
 
@@ -121,17 +140,31 @@ def create_group(request):
     return render(request, 'registration/create_group.html', {'form': form})
 
 
+
+
 @login_required
 @permission_required('survey.change_group', raise_exception=True)
 def edit_group(request, pk):
     group = get_object_or_404(Group, pk=pk)  # جلب المجموعة المحددة أو عرض 404 إذا لم تكن موجودة
+
     if request.method == 'POST':
         form = GroupForm(request.POST, instance=group)  # استخدام النموذج الحالي لتعديل المجموعة
         if form.is_valid():
             form.save()
-            return redirect('group_list')  # إعادة توجيه المستخدم إلى صفحة عرض المجموعات
+            return JsonResponse({
+                'success': True,
+                'message': 'تم حفظ التعديلات بنجاح!',
+                'redirect_url': '/accounts/groups/'  # أو المسار المناسب لعرض المجموعات
+            })
+        else:
+            # إذا كان هناك أخطاء في النموذج، أرسل الأخطاء إلى الـ AJAX
+            return JsonResponse({
+                'success': False,
+                'errors': {field: form.errors.get(field) for field in form.errors}
+            })
     else:
         form = GroupForm(instance=group)
+
     return render(request, 'registration/edit_group.html', {'form': form, 'group': group})
 
 

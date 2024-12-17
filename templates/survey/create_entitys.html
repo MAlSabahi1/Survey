@@ -1,38 +1,40 @@
 {% extends 'base.html' %}
-
 {% load widget_tweaks %}
 
 {% block title %}إنشاء كيان{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-lg-5">
+<div class="container-fluid px-lg-5" dir="rtl">
   <div class="row justify-content-center">
     <div class="col-lg-12 col-md-12 col-12">
       <div
         class="card border-0 rounded-4 animate__animated animate__fadeInUp shadow-sm"
         data-aos="fade-up"
       >
+        <!-- العنوان -->
         <div
-          class="card-header text-white text-center rounded-top py-4"
+          class="card-header text-white text-center rounded-top py-4 bg-primary"
         >
           <h3 class="mb-0"><i class="fas fa-poll-h"></i> إنشاء كيان جديد</h3>
         </div>
+
+        <!-- الجسم -->
         <div class="card-body p-4 p-md-5">
-          <form method="post" id="entityForm">
+          <form method="post" id="entityForm" novalidate>
             {% csrf_token %}
             
+            <!-- الحقول -->
             {% for field in form %}
             <div class="mb-4">
               <label for="{{ field.id_for_label }}" class="form-label fw-bold">
                 {{ field.label }}
               </label>
               {{ field|add_class:"form-control form-control-lg text-end" }}
-              {% if field.errors %}
-              <div class="text-danger mt-1">{{ field.errors|join:", " }}</div>
-              {% endif %}
+              <div class="invalid-feedback">يرجى إدخال {{ field.label }}.</div>
             </div>
             {% endfor %}
 
+            <!-- زر الإرسال -->
             <div class="text-center mt-4">
               <button
                 type="submit"
@@ -48,56 +50,74 @@
   </div>
 </div>
 
-
 <script>
-  // تفعيل مكتبة AOS للحركة عند التمرير
-  AOS.init();
-  
-  const entityForm = document.getElementById("entityForm");
-  
-  if (entityForm) {
-      entityForm.addEventListener("submit", function (e) {
-          e.preventDefault(); // منع الإرسال العادي للنموذج
-          const formData = new FormData(this);
+  document.addEventListener("DOMContentLoaded", function () {
+    const entityForm = document.getElementById("entityForm");
 
-          // إرسال البيانات باستخدام AJAX
-          fetch("{% url 'create_entitys' %}", {
-              method: "POST",
-              body: formData,
-          })
-          .then((response) => response.json())  // تحويل الاستجابة إلى JSON
-          .then((data) => {
-              if (data.success) {
-                  Swal.fire({
-                      icon: "success",
-                      title: "تم إنشاء الكيان!",
-                      text: "لقد تم إنشاء الكيان بنجاح.",
-                      showConfirmButton: false,
-                      timer: 2000,
-                  });
-                  entityForm.reset(); // تفريغ الحقول بعد الحفظ
-              } else {
-                  Swal.fire({
-                      icon: "error",
-                      title: "حدث خطأ!",
-                      text: "هناك مشكلة في إرسال البيانات: " + JSON.stringify(data.errors),
-                      showConfirmButton: false,
-                      timer: 2000,
-                  });
-              }
-          })
-          .catch((error) => {
-              Swal.fire({
-                  icon: "error",
-                  title: "حدث خطأ!",
-                  text: "تعذر الاتصال بالخادم.",
-                  showConfirmButton: false,
-                  timer: 2000,
-              });
-          });
+    // التحقق من الحقول عند الإرسال
+    entityForm.addEventListener("submit", function (e) {
+      e.preventDefault(); // منع إعادة تحميل الصفحة
+
+      let valid = true; // متغير لتحديد حالة التحقق
+      const fields = entityForm.querySelectorAll(".form-control");
+
+      // التحقق من الحقول
+      fields.forEach(field => {
+        if (field.name !== 'description' && !field.value.trim()) {
+          valid = false;
+          field.classList.add("is-invalid"); // إضافة كلاس الخطأ
+        } else {
+          field.classList.remove("is-invalid"); // إزالة كلاس الخطأ
+        }
       });
-  }
-</script>
 
+      // إذا كانت جميع الحقول صحيحة
+      if (valid) {
+        const formData = new FormData(this);
+
+        fetch("{% url 'create_entitys' %}", {
+          method: "POST",
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            toastr.success("تم إنشاء الكيان بنجاح!", '', {
+              positionClass: 'toast-top-right',
+              timeOut: 2000,
+            });
+            entityForm.reset(); // إعادة تعيين النموذج
+          } else {
+            toastr.error("حدث خطأ أثناء إنشاء الكيان.", '', {
+              positionClass: 'toast-top-right',
+              timeOut: 2000,
+            });
+          }
+        })
+        .catch(error => {
+          toastr.error("تعذر الاتصال بالخادم. يرجى المحاولة لاحقًا.", '', {
+            positionClass: 'toast-top-right',
+            timeOut: 2000,
+          });
+        });
+      } else {
+        toastr.error("يرجى ملء الحقول المطلوبة.", '', {
+          positionClass: 'toast-top-right',
+          timeOut: 2000,
+        });
+      }
+    });
+
+    // إخفاء الرسالة والخطأ عند الكتابة في الحقول
+    const fields = document.querySelectorAll(".form-control");
+    fields.forEach(field => {
+      field.addEventListener("input", function () {
+        if (field.value.trim()) {
+          field.classList.remove("is-invalid"); // إزالة كلاس الخطأ
+        }
+      });
+    });
+  });
+</script>
 
 {% endblock %}

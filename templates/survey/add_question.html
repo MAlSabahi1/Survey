@@ -15,33 +15,27 @@
 
                 <!-- الجسم -->
                 <div class="card-body py-5">
-                    <form method="post" id="questionForm" enctype="multipart/form-data">
+                    <form method="post" id="questionForm" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
                         <!-- نص السؤال -->
                         <div class="mb-4">
                             <label for="id_text" class="form-label fw-bold">نص السؤال</label>
                             {{ question_form.text|add_class:"form-control form-control-lg text-end" }}
-                            {% if question_form.text.errors %}
-                            <div class="text-danger mt-1">{{ question_form.text.errors }}</div>
-                            {% endif %}
+                            <div class="invalid-feedback">يرجى إدخال نص السؤال.</div>
                         </div>
 
                         <!-- نوع السؤال وتصنيف السؤال -->
                         <div class="row">
                             <div class="col-md-6 mb-4">
                                 <label for="id_question_type" class="form-label fw-bold">نوع السؤال</label>
-                                {{ question_form.question_type|add_class:"form-select form-select-lg text-end" }}
-                                {% if question_form.question_type.errors %}
-                                <div class="text-danger mt-1">{{ question_form.question_type.errors }}</div>
-                                {% endif %}
+                                {{ question_form.question_type|add_class:"form-select text-end" }}
+                                <div class="invalid-feedback">يرجى اختيار نوع السؤال.</div>
                             </div>
                             <div class="col-md-6 mb-4">
                                 <label for="id_category" class="form-label fw-bold">تصنيف السؤال</label>
-                                {{ question_form.category|add_class:"form-select form-select-lg text-end" }}
-                                {% if question_form.category.errors %}
-                                <div class="text-danger mt-1">{{ question_form.category.errors }}</div>
-                                {% endif %}
+                                {{ question_form.category|add_class:"form-select text-end" }}
+                                <div class="invalid-feedback">يرجى اختيار تصنيف السؤال.</div>
                             </div>
                         </div>
 
@@ -51,13 +45,20 @@
                             <div id="choices-container" class="mt-3">
                                 <div class="form-group choice-input">
                                     <label for="choice_0">الخيار 1</label>
-                                    <input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً">
+                                    <div class="input-group w-100">
+                                        <input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً">
+                                        <button type="button" class="btn-remove-choice mx-2">
+                                            <i class="fa-solid fa-trash"></i> <!-- أيقونة الحذف -->
+                                        </button> 
+                                    </div>
+                                    <div class="invalid-feedback">يرجى إدخال الخيار.</div>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-outline-secondary mt-3 mb-4" id="add-choice-btn">
                                 إضافة خيار آخر
                             </button>
-                        </div>
+</div>
+
 
                         <!-- خيار التنشيط -->
                         <div class="row">
@@ -83,64 +84,237 @@
     </div>
 </div>
 
+<!-- إضافة مكتبة Font Awesome -->
+<style>
+    /* تحسين تنسيق زر حذف مع أيقونة Trash */
+.btn-remove-choice {
+    border: none; /* إزالة الحدود */
+    color: #721c24; /* اللون الأحمر الداكن للنص */
+    font-size: 18px; /* حجم الأيقونة */
+    padding: 8px 16px; /* تباعد داخلي مناسب */
+    border-radius: 50%; /* زاوية مدورة */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease-in-out; /* إضافة انيمشن للتفاعل */
+    margin-left: 10px; /* مسافة بين الزر وحقل الإدخال */
+    height: 40px;
+    width: 40px;
+}
 
+/* تأثير عند التمرير فوق زر الحذف */
+.btn-remove-choice:hover {
+    background-color: #f5c6cb; /* خلفية أفتح عند التمرير */
+    transform: scale(1.1); /* تكبير الزر قليلاً */
+}
+
+/* تأثير عند الضغط على زر الحذف */
+.btn-remove-choice:active {
+    background-color: #721c24; /* تغيير الخلفية إلى لون داكن عند الضغط */
+    color: #fff; /* تغيير اللون إلى الأبيض */
+    transform: scale(0.95); /* تصغير الزر قليلاً عند الضغط */
+}
+
+/* إضافة تأثير عند إضافة خيار جديد */
+@keyframes fadeInChoice {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تحسين التنسيق بين الزر وحقل الإدخال */
+.input-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px; /* مسافة بين العناصر */
+}
+
+
+.input-group .btn-remove-choice {
+    margin-left: 10px; /* مسافة بين الزر وحقل الإدخال */
+    font-size: 18px;
+    padding: 8px;
+}
+
+/* زر إضافة خيار آخر */
+#add-choice-btn {
+
+    transition: all 0.3s ease;
+}
+
+#add-choice-btn:hover {
+    transform: scale(1.05);
+}
+
+#add-choice-btn:active {
+    transform: scale(0.95);
+}
+
+/* تطبيق الأنيمشن عند إضافة الخيار */
+.choice-input {
+    animation: fadeInChoice 0.5s ease-out; /* تطبيق الانيمشن عند إضافة خيار */
+}
+@media (max-width: 767px) {
+    .form-select {
+        font-size: 14px; /* تصغير حجم الخط */
+        padding: 8px; /* تقليل المسافة الداخلية */
+        height: auto; /* ضبط الارتفاع تلقائيًا */
+        width: 100%; /* ضمان أن الـ select يأخذ العرض الكامل */
+    }
+
+</style>
 <script>
-    AOS.init();
-
     document.addEventListener("DOMContentLoaded", function () {
+        const questionForm = document.getElementById("questionForm");
+        const questionText = document.querySelector("#id_text");
         const questionTypeSelect = document.querySelector("#id_question_type");
         const choiceForm = document.getElementById("choice-form");
         const addChoiceBtn = document.getElementById("add-choice-btn");
         const choicesContainer = document.getElementById("choices-container");
-
+    
+        let choiceIndex = 1;
+    
+        // إظهار أو إخفاء حقل الخيارات بناءً على نوع السؤال
         function toggleChoiceForm() {
-            choiceForm.style.display = (questionTypeSelect.value === "multiple_choice" || questionTypeSelect.value === "radio") ? "block" : "none";
+            if (questionTypeSelect.value === "multiple_choice" || questionTypeSelect.value === "radio") {
+                choiceForm.style.display = "block";
+            } else {
+                choiceForm.style.display = "none";
+                // إعادة تعيين الحقول عند الإخفاء
+                choicesContainer.innerHTML = `
+                    <div class="form-group choice-input d-flex">
+                        <label for="choice_0">الخيار 1</label>
+                        <div class="input-group w-100">
+                            <input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً">
+                            <button type="button" class="btn btn-label-danger remove-choice mx-2" style="background: #ffe5e5; color: #ff5b5c;">
+                                حذف <i class="fa-solid fa-xmark"></i>
+                            </button> 
+                        </div>
+                        <div class="invalid-feedback">يرجى إدخال الخيار.</div>
+                    </div>`;
+                choiceIndex = 1;
+            }
         }
+    
+        // إظهار أو إخفاء خيارات بناءً على نوع السؤال
         toggleChoiceForm();
         questionTypeSelect.addEventListener("change", toggleChoiceForm);
-
-        let choiceIndex = 1; // بدأ العد من الخيار الأخير الذي تم إضافته
+    
+        // إضافة خيار جديد
         addChoiceBtn.addEventListener("click", function () {
-            choiceIndex += 1;
+            choiceIndex++;
             const newChoiceDiv = document.createElement("div");
-            newChoiceDiv.classList.add("form-group", "choice-input", "mt-2");
-            newChoiceDiv.innerHTML = `<label for="choice_${choiceIndex}">الخيار ${choiceIndex}</label>
-            <input type="text" name="choices[]" class="form-control" id="choice_${choiceIndex}" placeholder="أدخل خياراً">`;
+            newChoiceDiv.classList.add("form-group", "choice-input", "d-flex", "mt-2");
+            newChoiceDiv.innerHTML = `
+                <label for="choice_${choiceIndex}">الخيار ${choiceIndex}</label>
+                <div class="input-group w-100">
+                    <input type="text" name="choices[]" class="form-control" id="choice_${choiceIndex}" placeholder="أدخل خياراً">
+                    <button type="button" class="btn btn-label-danger remove-choice mx-2" style="background: #ffe5e5; color: #ff5b5c;">
+                        حذف <i class="fa-solid fa-xmark"></i>
+                    </button> 
+                </div>
+                <div class="invalid-feedback">يرجى إدخال الخيار.</div>`;
             choicesContainer.appendChild(newChoiceDiv);
         });
-
-        document.getElementById("questionForm").addEventListener("submit", function (e) {
-            e.preventDefault(); // منع تحميل الصفحة
-            const formData = new FormData(this);
-            fetch("{% url 'add_question' %}", { method: "POST", body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // عرض رسالة النجاح
-                        toastr.success('تم إضافة السؤال بنجاح!', '', {
-                            positionClass: 'toast-top-right',
-                            timeOut: 2000,
-                        });
-
-                        // إخفاء قسم الخيارات بعد الحفظ
-                        choiceForm.style.display = 'none';
-
-                        // إعادة تعيين الحقول
-                        document.getElementById("questionForm").reset();
-                        choicesContainer.innerHTML = '<div class="form-group choice-input"><label for="choice_0">الخيار 1</label><input type="text" name="choices[]" class="form-control" id="choice_0" placeholder="أدخل خياراً"></div>';
-                    } else {
-                        toastr.error('حدث خطأ أثناء إضافة السؤال. يرجى المحاولة مرة أخرى.', '', {
-                            positionClass: 'toast-top-right',
-                            timeOut: 2000,
-                        });
-                    }
-                })
-                .catch(error => {
-                    toastr.error('تعذر الاتصال بالخادم. يرجى المحاولة لاحقًا.', '', {});
+    
+        // حذف خيار عند الضغط على زر X
+        choicesContainer.addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-choice")) {
+                e.target.closest(".form-group").remove();
+                choiceIndex--; // تقليل عداد الخيارات
+                // إعادة تسميه الخيارات المتبقية إذا لزم الأمر
+                let index = 0;
+                document.querySelectorAll(".form-group.choice-input").forEach(function (choice, i) {
+                    const input = choice.querySelector("input");
+                    input.id = "choice_" + i;
+                    input.name = "choices[]";
+                    choice.querySelector("label").setAttribute("for", "choice_" + i);
+                    choice.querySelector("label").textContent = `الخيار ${i + 1}`;
                 });
+            }
+        });
+    
+        // إرسال النموذج
+        questionForm.addEventListener("submit", function (e) {
+            e.preventDefault(); // منع إعادة تحميل الصفحة
+    
+            let valid = true; // متغير لتحديد حالة التحقق
+    
+            // التحقق من حقل "نص السؤال"
+            if (!questionText.value.trim()) {
+                valid = false;
+                questionText.classList.add("is-invalid");
+            } else {
+                questionText.classList.remove("is-invalid");
+            }
+    
+            // التحقق من حقل "نوع السؤال"
+            if (!questionTypeSelect.value.trim()) {
+                valid = false;
+                questionTypeSelect.classList.add("is-invalid");
+            } else {
+                questionTypeSelect.classList.remove("is-invalid");
+            }
+    
+            // إذا كانت الحقول غير صالحة، لا نرسل النموذج
+            if (!valid) {
+                return;
+            }
+    
+            // إعداد البيانات الخاصة بالنموذج
+            const formData = new FormData(this);
+    
+            fetch("{% url 'add_question' %}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message || "تم إضافة السؤال بنجاح!", '', {
+                        positionClass: 'toast-top-right',
+                        timeOut: 2000,
+                    });
+    
+                    questionForm.reset();
+                    toggleChoiceForm();
+                    questionText.classList.remove("is-invalid");
+                    questionTypeSelect.classList.remove("is-invalid");
+                } else {
+                    toastr.error(data.message || "حدث خطأ أثناء إضافة السؤال.", '', {
+                        positionClass: 'toast-top-right',
+                        timeOut: 2000,
+                    });
+                }
+            })
+            .catch(error => {
+                toastr.error("تعذر الاتصال بالخادم. يرجى المحاولة لاحقًا.", '', {
+                    positionClass: 'toast-top-right',
+                    timeOut: 2000,
+                });
+            });
+        });
+    
+        // إضافة حدث لتغيير التنسيق عند الكتابة
+        questionText.addEventListener('input', function () {
+            if (questionText.value.trim()) {
+                questionText.classList.remove("is-invalid");
+            }
+        });
+    
+        questionTypeSelect.addEventListener('input', function () {
+            if (questionTypeSelect.value.trim()) {
+                questionTypeSelect.classList.remove("is-invalid");
+            }
         });
     });
+    
 </script>
-
-
 {% endblock %}

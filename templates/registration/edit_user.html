@@ -21,8 +21,15 @@
                             <div class="col-md-6 mb-4">
                                 <label for="{{ field.id_for_label }}" class="form-label fs-5">{{ field.label }}</label>
                                 <div class="input-group">
+                                    <!-- إضافة فئة is-invalid إذا كان هناك أخطاء -->
+                                    {% if field.errors %}
+                                    {{ field|add_class:"form-control text-end is-invalid" }}
+                                    {% else %}
                                     {{ field|add_class:"form-control text-end" }}
+                                    {% endif %}
                                 </div>
+                                
+                                <!-- عرض رسالة الخطأ إذا كان هناك أخطاء -->
                                 {% if field.errors %}
                                 <div class="text-danger mt-1">
                                     <small>{{ field.errors }}</small>
@@ -45,6 +52,34 @@
     </div>
 </div>
 
+<style>
+    /* إضافة حد أحمر عند وجود خطأ في الحقل */
+    .is-invalid {
+        border: 1px solid red;
+    }
 
+    /* إخفاء رسالة الخطأ بشكل افتراضي */
+    .text-danger {
+        display: block; /* تأكد من ظهور رسالة الخطأ */
+    }
+</style>
+
+<script>
+    // إخفاء رسالة الخطأ عند بدء الكتابة في الحقل
+    document.querySelectorAll('.form-control').forEach(function(input) {
+        input.addEventListener('input', function() {
+            // إزالة فئة is-invalid عند الكتابة
+            if (input.classList.contains('is-invalid')) {
+                input.classList.remove('is-invalid');
+            }
+
+            // إخفاء رسالة الخطأ عند الكتابة
+            var errorDiv = input.closest('.mb-4').querySelector('.text-danger');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        });
+    });
+</script>
 
 {% endblock %}

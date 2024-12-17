@@ -12,7 +12,7 @@
 
                 <!-- الجسم -->
                 <div class="card-body py-5">
-                    <form method="post" class="p-4" novalidate>
+                    <form id="create-user-form" method="post" class="p-4" novalidate>
                         {% csrf_token %}
                         
                         <!-- الحقول الأساسية -->
@@ -21,17 +21,20 @@
                             <div class="col-md-6 mb-4">
                                 <label for="{{ field.id_for_label }}" class="form-label fs-5">{{ field.label }}</label>
                                 <div class="input-group">
-                                        {{ field|add_class:"form-control text-end" }}
-                                    </div>
+                                    <!-- إضافة فئة is-invalid إذا كان هناك أخطاء -->
                                     {% if field.errors %}
-                                    <div class="text-danger mt-1">
-                                        <small>{{ field.errors }}</small>
-                                    </div>
+                                    {{ field|add_class:"form-control text-end is-invalid" }}
+                                    {% else %}
+                                    {{ field|add_class:"form-control text-end" }}
                                     {% endif %}
                                 </div>
+                                <!-- عرض رسالة الخطأ إذا كانت هناك أخطاء -->
+                                <div class="text-danger mt-1 d-none" id="error-{{ field.name }}">
+                                    <!-- سيتم تعبئة الأخطاء عبر AJAX -->
+                                </div>
+                            </div>
                             {% endfor %}
                         </div>
-
 
                         <!-- زر الإضافة -->
                         <div class="d-flex justify-content-center w-auto">
@@ -45,4 +48,74 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    $(document).ready(function () {
+        // عند إرسال النموذج
+        $('#create-user-form').on('submit', function (e) {
+            e.preventDefault(); // منع الإرسال الافتراضي
+
+            // إعادة تعيين الأخطاء
+            $('.text-danger').addClass('d-none'); // إخفاء جميع رسائل الخطأ
+            $('.is-invalid').removeClass('is-invalid'); // إزالة فئة is-invalid من جميع الحقول
+
+            // إرسال بيانات النموذج باستخدام AJAX
+            $.ajax({
+                url: '{% url "create_user" %}', // يرسل الطلب إلى نفس عنوان URL
+                type: 'POST',
+                data: $(this).serialize(), // تسلسل بيانات النموذج
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        // عرض رسالة النجاح باستخدام SweetAlert
+                        Swal.fire({
+                            title: 'تم إنشاء المستخدم!',
+                            text: response.message,
+                            icon: 'success',
+                            showConfirmButton: false, // إخفاء زر "OK"
+                            timer: 1000, // اختفاء الرسالة بعد ثانية واحدة
+                            timerProgressBar: true // إظهار شريط تقدم
+                        }).then(() => {
+                            // إعادة التوجيه بعد انتهاء المؤقت
+                            window.location.href = response.redirect_url;
+                        });
+                    } else {
+                        // إذا كان هناك أخطاء، عرضها
+                        for (const [field, errors] of Object.entries(response.errors)) {
+                            // عرض الرسالة في العنصر المخصص
+                            $(`#error-${field}`).text(errors.join(', ')).removeClass('d-none');
+                            
+                            // إضافة فئة is-invalid للحقل الذي يحتوي على أخطاء
+                            $(`[name="${field}"]`).addClass('is-invalid');
+                        }
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'خطأ!',
+                        text: 'حدث خطأ أثناء معالجة الطلب.',
+                        icon: 'error',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            });
+        });
+
+        // عند الكتابة في الحقل، إخفاء رسالة الخطأ وإزالة الحدود الحمراء
+        $('.form-control').on('input', function () {
+            // إزالة فئة is-invalid عند الكتابة
+            if ($(this).hasClass('is-invalid')) {
+                $(this).removeClass('is-invalid');
+            }
+
+            // إخفاء رسالة الخطأ عند الكتابة
+            const errorDiv = $(this).closest('.mb-4').find('.text-danger');
+            if (errorDiv.length > 0) {
+                errorDiv.addClass('d-none');
+            }
+        });
+    });
+</script>
+
 {% endblock %}

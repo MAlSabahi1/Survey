@@ -201,7 +201,6 @@ def filter_questions(keywords=None, question_types=None):
 
 
 
-
 @login_required
 @permission_required('survey.add_question', raise_exception=True)
 def add_question(request):
@@ -210,16 +209,20 @@ def add_question(request):
 
         if question_form.is_valid():
             question = question_form.save(commit=False)
-            # تأكد من حذف أو تعديل السطر التالي حسب ما إذا كنت تحتاج تعيين استبيان محدد للسؤال
+
+            # تحقق من وجود نص السؤال ونوعه
+            if not question.text or not question.question_type:
+                return JsonResponse({'success': False, 'message': 'يرجى التأكد من إدخال نص السؤال واختيار نوع السؤال.'})
+
+            # حفظ السؤال
             question.save()
-            
-            # حفظ الاختيارات إذا كان نوع السؤال "اختيار متعدد" أو "راديو"
+
+            # حفظ الاختيارات فقط إذا كان نوع السؤال "اختيار متعدد" أو "راديو"
             if question.question_type in ['multiple_choice', 'radio']:
                 choices = request.POST.getlist('choices[]')
                 for choice_text in choices:
-                    if choice_text.strip():
-                        Choice.objects.create(question=question, text=choice_text)
-            
+                    Choice.objects.create(question=question, text=choice_text)
+
             # إرسال رد JSON مع رسالة النجاح
             return JsonResponse({'success': True, 'message': 'تم إضافة السؤال بنجاح!'})
         else:
@@ -229,12 +232,10 @@ def add_question(request):
     else:
         question_form = QuestionForm()
 
-    user_permissions = request.user.get_all_permissions()
-
     return render(request, 'survey/add_question.html', {
         'question_form': question_form,
-        'user_permissions': user_permissions,
     })
+
 
 
 @login_required

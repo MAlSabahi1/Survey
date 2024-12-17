@@ -120,7 +120,7 @@
               class="form-control"
               id="editName"
               name="name"
-              required
+              
             />
           </div>
 
@@ -233,10 +233,26 @@
     });
 
     // عند إرسال النموذج
+    // عند إرسال النموذج
     $("#editEntityForm").on("submit", function (e) {
       e.preventDefault();
 
       const entityId = $("#editEntityId").val();
+      const entityName = $("#editName").val().trim(); // الحصول على قيمة اسم الكيان
+
+      // تحقق من أن اسم الكيان ليس فارغًا
+      if (entityName === "") {
+        Swal.fire({
+          title: "خطأ!",
+          text: "اسم الكيان لا يمكن أن يكون فارغًا.",
+          icon: "error",
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+        return; // إيقاف إرسال النموذج إذا كان الحقل فارغًا
+      }
+
       const formData = $(this).serialize();
 
       $.ajax({
@@ -247,7 +263,7 @@
           if (response.success) {
             // تحديث القيم في الجدول
             const row = $(`#entityRow-${entityId}`);
-            row.find(".entity-name").text($("#editName").val());
+            row.find(".entity-name").text(entityName);
             row.find(".entity-description").text($("#editDescription").val());
             const parentText = $("#editParent option:selected").text();
             row
@@ -287,6 +303,7 @@
         },
       });
     });
+
 
     // حذف الكيان
     $(document).ready(function () {
