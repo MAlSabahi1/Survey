@@ -1,10 +1,10 @@
 {% extends "base.html" %} {% load static %} {% block title %}قائمة الأسئلة{%endblock %} {% block content %}
-<div class="container-fluid px-lg-5">
+<div class="container-fluid px-lg-4">
   <!-- العنوان العام -->
   <div class="col-lg-12 text-center mb-4">
     <div class="card border-0 rounded-4">
       <div class="card-header text-white text-center rounded-top py-4 mb-4">
-        <h3 class="mb-0"><i class="fas fa-poll"></i> قائمة الأسئلة</h3>
+        <h2 class="mb-0"><i class="fas fa-poll"></i> قائمة الأسئلة</h2>
       </div>
     </div>
   </div>
@@ -268,10 +268,10 @@
                                             data-type="${question.question_type}" 
                                             data-category="${question.category}"
                                             data-active="${question.is_active}">
-                                            تعديل
+                                          <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
                                         <button class="btn btn-outline-danger delete-question-btn" data-id="${question.id}">
-                                            حذف
+                                          <i class="fa-regular fa-trash-can"></i>
                                         </button>
                                     </td>
                                 </tr>

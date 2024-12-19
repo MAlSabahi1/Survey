@@ -4,7 +4,7 @@
 {% block content %}
 
 
-<div class="container my-4">
+<div class="container-fluid px-lg-4">
   <!-- قسم الترحيب -->
     <div class="welcome-section text-right my-4">
         <h1>مرحباً، {{ request.user.username }}!</h1>
@@ -50,7 +50,7 @@
         <div class="card-header text-center bg-light">
           <h5 class="mb-0 text-white">توزيع الأسئلة حسب النوع</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <canvas id="questionsByTypeChart"></canvas>
         </div>
       </div>
@@ -62,7 +62,7 @@
         <div class="card-header text-center bg-light">
           <h5 class="mb-0 text-white">الكيانات المرتبطة بأكبر عدد من الاستبيانات</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <canvas id="entitiesBySurveysChart"></canvas>
         </div>
       </div>
@@ -73,7 +73,7 @@
             <div class="card-header text-center bg-light">
                 <h5 class="mb-0 text-white">إجمالي عدد المستخدمين: {{ total_users }}</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <!-- إضافة عنصر canvas للرسم -->
                 <canvas id="usersChart"></canvas>
             </div>
@@ -85,7 +85,7 @@
         <div class="card-header text-center bg-light">
           <h5 class="mb-0 text-white">نسبة الإجابات المكتملة لكل استبيان</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <canvas id="completionRateChart"></canvas>
         </div>
       </div>
@@ -98,7 +98,7 @@
             <div class="card-header text-center bg-light">
               <h5 class="mb-0 text-white">عدد الاستبيانات لكل شهر</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
               <canvas id="surveysByMonthChart"></canvas>
             </div>
           </div>
@@ -110,7 +110,7 @@
             <div class="card-header text-center bg-light">
               <h5 class="mb-0 text-white">أكثر الكيانات مشاركة بالإجابات</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
               <canvas id="topEntitiesChart"></canvas>
             </div>
           </div>
@@ -122,7 +122,7 @@
           <div class="card-header text-center bg-light">
             <h5 class="mb-0 text-white">توزيع الاستبيانات حسب الفئات</h5>
           </div>
-          <div class="card-body">
+          <div class="card-body p-4">
             <canvas id="surveysByCategoryChart"></canvas>
           </div>
         </div>
@@ -134,7 +134,7 @@
             <div class="card-header text-center bg-light">
                 <h5 class="mb-0 text-white">عدد الاستبيانات التي أنشأها كل مستخدم</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <canvas id="surveysByUserChart"></canvas>
             </div>
             </div>

@@ -16,7 +16,7 @@
           <div class="card h-100 rounded-4 border-0 shadow-sm" data-aos="fade-up" data-aos-duration="1000">
               <!-- العنوان -->
               <div class="card-header text-white rounded-top d-flex justify-content-between align-items-center" 
-                   style="background: linear-gradient(135deg, #4b6282 0%, #6a86a3 100%);">
+                   style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);">
                   <h4 class="card-title mb-0 text-truncate" style="font-size: 1.2rem;">
                     <i class="fa-solid fa-layer-group ms-2"></i>{{ parent.name }}
                   </h4>
@@ -32,12 +32,12 @@
                   {% endif %}
               </div>
               <!-- المحتوى -->
-              <div class="card-body" style="background-color: #f8f9fa; padding: 20px;">
+              <div class="card-body" style="padding: 20px;">
                   <ul class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
                       {% for child in child_permissions %}
                       {% if child.parent.id == parent.id %}
                       <li class="list-group-item text-end border-0 d-flex justify-content-between align-items-center"
-                          style="background-color: #f7f7f7; color: #495057;">
+                          >
                           <a href="{% url 'categories' child.encoded_id %}" class="fw-bold text-truncate">
                               {{ child.name }}
                           </a>
@@ -158,6 +158,9 @@ $("#sectorForm").submit(function (event) {
 
               // إغلاق الـ modal بعد إضافة القطاع
               $("#addSectorModal").modal("hide");
+                 // تنظيف الحقل بعد الإغلاق
+        $("#sectorName").val(""); // مسح قيمة حقل اسم القطاع
+        $("#entityId").val(""); // مسح قيمة الحقل المخفي الخاص بالـ entity_id
 
               // عرض رسالة احترافية باستخدام SweetAlert2
               Swal.fire({

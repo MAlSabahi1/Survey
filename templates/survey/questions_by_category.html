@@ -3,10 +3,10 @@
 <div class="container-fluid" dir="rtl">
   <!-- Title Section -->
   <div class="card-header text-white text-center rounded-top py-4 mb-4">
-    <h3 class="text-center mb-0">
+    <h2 class="text-center mb-0">
       <i class="fa-regular fa-circle-question"></i>
       الأسئلة لتصنيف {{ category }}
-    </h3>
+    </h2>
   </div>
 
   <!-- Survey Form -->
@@ -30,13 +30,12 @@
         id="survey_name"
         class="form-control p-3 border-1 shadow-sm rounded-3"
         placeholder="أدخل اسم الاستبيان"
-        style="background-color: #f9f9f9; border: 1px solid #ddd"
         required
       />
     </div>
 
     <!-- Start of the questions -->
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
       {% for question in questions %}
       <input type="hidden" name="entity_id" value="{{ entity.id }}" />
 
@@ -159,16 +158,66 @@
       {% endfor %}
     </div>
 
-    <!-- Submit Button -->
-    <div class="text-center mt-5">
-      <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
-        إرسال الإجابات
-      </button>
-      <button id="reset-storage" type="button" class="btn btn-secondary px-5 py-3">إعادة تعيين النموذج</button>
+<!-- Sticky Action Bar -->
+<div class="sticky-bottom action-bar" style="bottom:0; position:sticky;background:#e7ebef;border-radius:15px 15px 0 0 ;">
+  <div class="d-flex justify-content-between align-items-center p-4 shadow-sm">
+    <button type="submit" class="btn btn-primary action-btn">
+      حفظ
+    </button>
+    <button type="button" id="reset-storage" class="btn btn-secondary action-btn">
+      إعادة تعيين
+    </button>
+  </div>
+</div>
 
-    </div>
   </form>
 </div>
+
+<style>
+  /* تنسيق شريط الأزرار */
+.action-bar {
+  bottom: 0;
+  position: sticky;
+  border-radius: 15px 15px 0 0;
+  z-index: 1000; /* للتأكد من ظهوره فوق العناصر الأخرى */
+}
+
+/* تنسيق الأزرار */
+.action-btn {
+  width: 120px; /* العرض الثابت */
+  height: 45px; /* الارتفاع الثابت */
+  font-size: 16px; /* حجم النص */
+  border-radius: 10px; /* الزوايا المستديرة */
+  transition: all 0.3s ease; /* تأثير التفاعل */
+}
+
+/* تأثير عند تمرير الماوس */
+.action-btn:hover {
+  transform: scale(1.05); /* تكبير بسيط */
+}
+
+
+.card{
+  border-bottom: 2px solid #004777 !important;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* الظل الذي تريده */
+  transition: box-shadow 0.3s ease-in-out; /* تأثير انتقال عند التفاعل */
+}
+
+/* توافق الأزرار مع الشاشات الصغيرة */
+@media (max-width: 576px) {
+  .action-btn {
+    width: 100px;
+    height: 40px;
+    font-size: 14px;
+    padding: 0 10px;
+  }
+
+  .action-bar {
+    padding: 10px; /* تصغير المسافات الداخلية */
+  }
+}
+
+</style>
 
 <script>
   document

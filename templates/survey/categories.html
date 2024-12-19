@@ -2,13 +2,13 @@
 {% block title %}اختر التصنيف{% endblock %}
 {% load static %} 
 {% block content %}
-<div class="container-fluid" dir="rtl">
+<div class="container-fluid px-lg-4">
   <div class="row">
     <!-- العنوان العام -->
     <div class="col-12 text-center mb-4">
       <div class="card border-0 rounded-4">
         <div class="card-header text-white text-center rounded-top py-4 mb-4">
-          <h3 class="mb-0"><i class="fas fa-poll"></i> الاستبيانات</h3>
+          <h2 class="mb-0"><i class="fas fa-poll"></i> الاستبيانات</h2>
         </div>
       </div>
     </div>
@@ -30,7 +30,7 @@
     <div class="card">
       <div class="card-body">
         <!-- علامات التبويب (Tabs) -->
-        <ul class="nav nav-tabs justify-content-center mb-3" role="tablist">
+        <ul class="nav nav-tabs justify-content-center mb-3 p-2" role="tablist">
           <li class="nav-item">
             <a class="nav-link active" id="staff-tab" data-bs-toggle="tab" href="#staff-surveys" role="tab"><i class="fas fa-users"></i> الكادر</a>
           </li>
@@ -46,7 +46,7 @@
         <div class="card rounded-4 border-0">
         <div class="tab-content">
           <!-- استبيانات الكادر -->
-          <div class="tab-pane fade show active" id="staff-surveys" role="tabpanel">
+          <div class="tab-pane table-responsive fade show active" id="staff-surveys" role="tabpanel">
             {% if staff_surveys %}
             <div class="table-responsive">
               <table class="table table-striped table-hover">
@@ -89,7 +89,7 @@
           </div>
 
           <!-- استبيانات البنية التحتية -->
-          <div class="tab-pane fade" id="infrastructure-surveys" role="tabpanel">
+          <div class="tab-pane table-responsive fade" id="infrastructure-surveys" role="tabpanel">
             {% if infrastructure_surveys %}
               <table class="table table-striped table-hover">
                 <thead class="table-dark">
@@ -129,7 +129,7 @@
           </div>
 
           <!-- استبيانات الأنظمة -->
-          <div class="tab-pane fade" id="systems-surveys" role="tabpanel">
+          <div class="tab-pane table-responsive fade" id="systems-surveys" role="tabpanel">
             {% if systems_surveys %}
               <table class="table table-striped table-hover">
                 <thead class="table-dark">
