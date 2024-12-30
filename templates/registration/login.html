@@ -200,9 +200,6 @@ span a:hover{
       <div class="container main">
         <div class="row">
           <div class="col-md-6 side-image">
-
-            <!-------------      image     ------------->
-
             <img src="images/white.png" alt>
             <div class="text">
               <p class="text-center text-black-50">
@@ -236,14 +233,21 @@ span a:hover{
               <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next }}" />
+            
                 {% include 'include/login_forms.html' %}
-    
-                <div class="mb-3">
-                  <button class="btn btn-primary d-grid w-100" type="submit">
-                    تسجيل الدخول
-                  </button>
-                </div>
-              </form>
+            
+                {% if locked_out %}
+                    <p style="color: red;">لقد تجاوزت الحد الأقصى للمحاولات. من فضلك انتظر 5 دقائق قبل المحاولة مرة أخرى.</p>
+                    <div class="mb-3">
+                        <button class="btn btn-primary d-grid w-100" type="submit" disabled>تسجيل الدخول</button>
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <button class="btn btn-primary d-grid w-100" type="submit">تسجيل الدخول</button>
+                    </div>
+                {% endif %}
+            </form>
+                  
               <div class="signin">
                 <!-- <span>Already have an account? <a href="#">Log in
                     here</a></span> -->

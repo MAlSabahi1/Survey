@@ -1,15 +1,128 @@
+from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
+
+from django_project import settings
 from .forms import *
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from survey.models import *
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.contrib.auth.views import LoginView
+from axes.models import AccessAttempt, AccessLog
+from django.utils.timezone import now
+from axes.handlers.proxy import AxesProxyHandler
+
+from user_agents import parse
+
+from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.dispatch import receiver
+from .models import UserSession
+
+
+from .models import ActionLog
+
+@login_required
+def logs_events(request):
+    logs = ActionLog.objects.all().order_by('-timestamp')  # ترتيب السجلات من الأحدث إلى الأقدم
+    return render(request, 'registration/log_events.html', {'logs': logs})
+
+from django.contrib import messages
+
+@login_required
+def delete_all_logs(request):
+    if not request.user.is_superuser:
+        return redirect('logs_events')
+
+    ActionLog.objects.all().delete()
+    # messages.success(request, "تم حذف جميع السجلات بنجاح.")
+    return redirect('logs_events')
+
+
+@receiver(user_logged_in)
+def create_user_session(sender, request, user, **kwargs):
+    # إنشاء جلسة جديدة عند تسجيل الدخول
+    UserSession.objects.create(user=user)
+
+@receiver(user_logged_out)
+def update_user_session(sender, request, user, **kwargs):
+    # تحديث وقت الخروج عند تسجيل الخروج
+    try:
+        session = UserSession.objects.filter(user=user, logout_time__isnull=True).latest('login_time')
+        session.logout_time = timezone.now()
+        session.save()
+    except UserSession.DoesNotExist:
+        pass
+
+def user_sessions(request):
+    # استخراج User-Agent من الطلب
+    user_agent_string = request.META.get('HTTP_USER_AGENT', '')
+    user_agent = parse(user_agent_string)
+    
+    # استخراج معلومات المتصفح ونظام التشغيل
+    browser = f"{user_agent.browser.family} {user_agent.browser.version_string}"
+    os = f"{user_agent.os.family} {user_agent.os.version_string}"
+    
+    # يمكنك عرض البيانات في السجلات إذا لزم الأمر (للاختبار)
+    print(f"Browser: {browser}, OS: {os}")
+    
+    # جلب السجلات
+    sessions = UserSession.objects.all().order_by('-login_time')[:30]
+    
+    # إضافة معلومات المتصفح ونظام التشغيل للـ context
+    return render(request, 'registration/user_sessions.html', {
+        'sessions': sessions,
+        'browser': browser,
+        'os': os
+    })
+@login_required
+def delete_session(request, session_id):
+    # الحصول على السجل بناءً على المعرف
+    session = get_object_or_404(UserSession, id=session_id)
+
+    # حذف السجل
+    session.delete()
+
+    # إعادة توجيه إلى صفحة سجلات الجلسات
+    return redirect('user_sessions')  # التأكد من اسم الـ URL الذي يعرض سجلات الجلسات
+
+@login_required
+def delete_all_sessions(request):
+    if request.method == "POST":
+        # حذف جميع سجلات الجلسات
+        UserSession.objects.all().delete()
+        return redirect('user_sessions')  # إعادة توجيه إلى صفحة سجلات الجلسات بعد الحذف
+    return HttpResponse(status=405)  # في حال كانت الطريقة غير صحيحة
+
+def logs_view(request):
+    # استرجاع سجلات محاولات الدخول الفاشلة من django-axes
+    axes_logs = AccessAttempt.objects.all().order_by('-attempt_time')[:30]  # عرض آخر 30 محاولة
+
+    # إضافة نوع المتصفح إلى كل سجل
+    for log in axes_logs:
+        user_agent = parse(log.user_agent)
+        log.browser = user_agent.browser.family  # نوع المتصفح (مثل Chrome, Firefox)
+        log.os = user_agent.os.family  # نوع نظام التشغيل (مثل Windows, Linux)
+    
+    return render(request, 'registration/logs.html', {
+        'axes_logs': axes_logs,
+    })
+
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'  # مسار صفحة تسجيل الدخول الخاصة بك
+
+    def dispatch(self, request, *args, **kwargs):
+        # تحقق مما إذا كان المستخدم محظورًا
+        if AxesProxyHandler.is_locked(request):
+            # إعادة توجيه المستخدم إلى صفحة الحظر
+            return render(request, 'registration/login_locked.html')
+        return super().dispatch(request, *args, **kwargs)
+
 
 
 class SignUpView(generic.CreateView):

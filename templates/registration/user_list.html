@@ -1,6 +1,4 @@
-{% extends "../base.html" %}
-
-{% block content %}
+{% extends "../base.html" %} {% block content %}
 <div class="container-fluid px-lg-4" dir="rtl">
   <div class="row">
     <!-- قسم التنقل -->
@@ -11,24 +9,26 @@
         </div>
       </div>
       <div class="row mb-4 align-items-center">
-     <!-- حقل البحث -->
-<div class="col-12 col-md-6">
-  <label for="searchInput" class="form-label fw-bold">بحث:</label>
-  <input
-    type="text"
-    id="searchInput"
-    class="form-control"
-    placeholder="ابحث عن المستخدم..."
-    oninput="filterTable()"
-  />
-</div>
+        <!-- حقل البحث -->
+        <div class="col-12 col-md-6">
+          <label for="searchInput" class="form-label fw-bold">بحث:</label>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control"
+            placeholder="ابحث عن المستخدم..."
+            oninput="filterTable()"
+          />
+        </div>
 
-      <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity">
-        <a href="{% url 'create_user'%}" class="btn btn-primary btn-lg">
-          <i class="fa-solid fa-plus"></i> إضافة مستخدم جديد
-        </a>
+        <div
+          class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity"
+        >
+          <a href="{% url 'create_user'%}" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-plus"></i> إضافة مستخدم جديد
+          </a>
+        </div>
       </div>
-    </div>
       <!-- جدول المستخدمين -->
       <div class="card rounded-4 border-0">
         <div class="card-body">
@@ -40,7 +40,8 @@
                   <th>البريد الإلكتروني</th>
                   <th>المجموعات</th>
                   <th>الكيانات</th>
-                  <th>الصلاحيات</th> <!-- عمود جديد للصلاحيات -->
+                  <th>الصلاحيات</th>
+                  <!-- عمود جديد للصلاحيات -->
                   <th>إجراءات</th>
                 </tr>
               </thead>
@@ -56,7 +57,9 @@
                   </td>
                   <td>
                     {% for permission in user.entity_permissions.all %}
-                    <span class="badge bg-primary">{{ permission.entity.name }}</span>
+                    <span class="badge bg-primary"
+                      >{{ permission.entity.name }}</span
+                    >
                     {% endfor %}
                   </td>
                   <td>
@@ -109,14 +112,13 @@
 </div>
 
 <style>
-  @media (max-width:768px){
-    .row{
+  @media (max-width: 768px) {
+    .row {
       flex-direction: column-reverse;
-      gap:1.5rem;
+      gap: 1.5rem;
     }
-    .add-entity{
+    .add-entity {
       justify-content: center !important;
-      
     }
   }
 </style>

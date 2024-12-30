@@ -1,0 +1,92 @@
+{% extends "../base.html" %}
+
+{% block content %}
+<div class="container-fluid px-lg-4" dir="rtl">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 rounded-4">
+                <div class="card-header text-white text-center rounded-top py-4 mb-4">
+                    <h3 class="mb-0"><i class="fas fa-history"></i> سجلات محاولات تسجيل الدخول</h3>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <!-- حقل البحث -->
+                    <label for="searchInput" class="form-label fw-bold">بحث:</label>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="form-control"
+                        placeholder="ابحث عن سجل..."
+                        oninput="filterTable()"
+                    />
+                </div>
+            </div>
+
+            <div class="card rounded-4 border-0">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="logTable" class="table table-striped table-hover w-100">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>IP</th>
+                                    <th>اسم المستخدم</th>
+                                    <th>الوقت</th>
+                                    <th>محاولات فاشلة</th>
+                                    {% comment %} <th>الحالة</th> {% endcomment %}
+                                    <th>المتصفح</th> <!-- إضافة عمود المتصفح -->
+                                    <th>نظام التشغيل</th> <!-- إضافة عمود نظام التشغيل -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in axes_logs %}
+                                    <tr>
+                                        <td>{{ log.ip_address }}</td>
+                                        <td>{{ log.username }}</td>
+                                        <td>{{ log.attempt_time }}</td>
+                                        <td>{{ log.failures_since_start }}</td>
+                                        {% comment %} <td>
+                                            {% if log.is_blocked %}
+                                                محظور
+                                            {% else %}
+                                                غير محظور
+                                            {% endif %}
+                                        </td> {% endcomment %}
+                                        <td>{{ log.browser }}</td> <!-- عرض نوع المتصفح -->
+                                        <td>{{ log.os }}</td> <!-- عرض نظام التشغيل -->
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("logTable");
+        let rows = table.getElementsByTagName("tr");
+
+        // المرور عبر الصفوف واستعراض البيانات
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            // التحقق من كل خلية في الصف للبحث عن تطابق
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.toLowerCase().includes(input)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            // إخفاء أو عرض الصف بناءً على التطابق
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+</script>
+{% endblock %}

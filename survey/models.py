@@ -7,6 +7,9 @@ class Entitys(models.Model):
     description = models.TextField(blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='sectors', null=True, blank=True)
     
+    class Meta:
+        verbose_name = "الكيانات"
+    
     def __str__(self):
         return self.name
 
@@ -14,6 +17,9 @@ class UserEntityPermission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="entity_permissions")
     entity = models.ForeignKey(Entitys, on_delete=models.CASCADE, related_name="user_permissions")
 
+    class Meta:
+        verbose_name = "صلاحية المستخدم على الكيان"
+        
     def __str__(self):
         return f"{self.user.username} - {self.entity.name}"
 
@@ -39,6 +45,8 @@ class Question(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORIES, default='systems')
     is_active = models.BooleanField(default=True)  # حقل نشط
     
+    class Meta:
+        verbose_name = "الاسئلة"
 
 
     def __str__(self):
@@ -48,6 +56,9 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE)
     text = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "الاختيارات المتعددة"
 
     def __str__(self):
         return self.text
@@ -59,6 +70,8 @@ class Surveys(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     entities = models.ManyToManyField(Entitys, related_name="surveys", blank=True)
 
+    class Meta:
+        verbose_name = "الاستبيانات"
     
 
 
@@ -70,7 +83,8 @@ class Answer(models.Model):
     choice_selected = models.ForeignKey(Choice, null=True, blank=True, on_delete=models.SET_NULL)
     note = models.TextField(blank=True, null=True)  # لإضافة الملاحظات
     
-    
+    class Meta:
+        verbose_name = "الاجابات"
     
 
     def __str__(self):
