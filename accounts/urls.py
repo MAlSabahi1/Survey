@@ -22,6 +22,7 @@ urlpatterns = [
     # إذا كنت ترغب في إضافة صفحة خاصة بعرض الحظر (كما تم ذكره في المثال السابق):
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logs/', views.logs_view, name='logs'),
+    path('logs/clear/', views.clear_logs, name='clear_logs'),
     path('user-sessions/', views.user_sessions, name='user_sessions'),
     path('delete-session/<int:session_id>/', views.delete_session, name='delete_session'),
     path('delete-all-sessions/', views.delete_all_sessions, name='delete_all_sessions'),

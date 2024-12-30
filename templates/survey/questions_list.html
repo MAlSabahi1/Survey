@@ -394,11 +394,24 @@
                   row.fadeOut(500, function () {
                     $(this).remove();
                   });
-                  Swal.fire("تم الحذف!", response.message, "success");
+                  Swal.fire({
+                    title: "تم الحذف!",
+                    text: response.message,
+                    icon: "success",
+                    timer: 3000, // الوقت بالمللي ثانية (3000 = 3 ثوانٍ)
+                    showConfirmButton: false, // إخفاء زر التأكيد
+                  });
                 } else {
-                  Swal.fire("خطأ!", response.message, "error");
+                  Swal.fire({
+                    title: "خطأ!",
+                    text: response.message,
+                    icon: "error",
+                    timer: 1000,
+                    showConfirmButton: false,
+                  });
                 }
               },
+              
               error: function () {
                 Swal.fire("خطأ!", "حدث خطأ أثناء محاولة الحذف.", "error");
               },

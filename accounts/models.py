@@ -32,3 +32,18 @@ class ActionLog(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action} - {self.model_name} - {self.timestamp}"
+    
+
+
+
+class LoginAttempt(models.Model):
+    ip_address = models.GenericIPAddressField()
+    username = models.CharField(max_length=150, null=True, blank=True)
+    attempt_time = models.DateTimeField(auto_now=True)  # يتم تحديث الوقت عند كل محاولة
+    failures_since_start = models.IntegerField(default=1)  # عدد المحاولات
+    user_agent = models.TextField(null=True, blank=True)  # لتخزين معلومات المتصفح
+    browser = models.CharField(max_length=100, null=True, blank=True)
+    os = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.username} - {self.ip_address} - {self.attempt_time}"

@@ -11,7 +11,7 @@ class SessionSecurityMiddleware:
     def __call__(self, request):
         if request.user.is_authenticated:
             last_activity = request.session.get('last_activity')
-            timeout_seconds = 30  # Session timeout in seconds (e.g., 5 minutes)
+            timeout_seconds = 300  # Session timeout in seconds (e.g., 5 minutes)
 
             if last_activity:
                 elapsed_time = (now() - last_activity).total_seconds()

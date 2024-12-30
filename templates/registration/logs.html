@@ -21,6 +21,13 @@
                         oninput="filterTable()"
                     />
                 </div>
+                <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-end mb-2 add-entity">
+                    <div class="text-end mb-3">
+                        <a href="{% url 'clear_logs' %}" class="btn btn-outline-danger btn-md" onclick="return confirm('هل أنت متأكد أنك تريد مسح جميع السجلات؟')">
+                            <i class="fas fa-trash"></i> مسح جميع السجلات
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="card rounded-4 border-0">
@@ -39,22 +46,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for log in axes_logs %}
-                                    <tr>
-                                        <td>{{ log.ip_address }}</td>
-                                        <td>{{ log.username }}</td>
-                                        <td>{{ log.attempt_time }}</td>
-                                        <td>{{ log.failures_since_start }}</td>
-                                        {% comment %} <td>
-                                            {% if log.is_blocked %}
-                                                محظور
-                                            {% else %}
-                                                غير محظور
-                                            {% endif %}
-                                        </td> {% endcomment %}
-                                        <td>{{ log.browser }}</td> <!-- عرض نوع المتصفح -->
-                                        <td>{{ log.os }}</td> <!-- عرض نظام التشغيل -->
-                                    </tr>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.ip_address }}</td>
+                                    <td>{{ log.username }}</td>
+                                    <td>{{ log.attempt_time }}</td>
+                                    <td>{{ log.failures_since_start }}</td>
+                                    <td>{{ log.browser }}</td>
+                                    <td>{{ log.os }}</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -64,7 +64,32 @@
         </div>
     </div>
 </div>
-
+{% if messages %}
+    <script type="text/javascript">
+      // انتظر حتى يتم تحميل الصفحة
+      window.onload = function () {
+        // عرض الرسالة باستخدام SweetAlert2
+        Swal.fire({
+          icon: "warning",
+          title: "تم مسح جميع السجل ",
+          text: "{% for message in messages %}{{ message }}{% endfor %}",
+          showConfirmButton: false, // لا يظهر زر التأكيد
+          timer: 3000, // الرسالة ستختفي بعد 5 ثوانٍ
+        });
+      };
+    </script>
+    {% endif %}
+<style>
+    @media (max-width: 768px) {
+      .row {
+        flex-direction: column-reverse;
+        gap: 1.5rem;
+      }
+      .add-entity {
+        justify-content: center !important;
+      }
+    }
+  </style>
 <script>
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();

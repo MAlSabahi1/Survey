@@ -40,7 +40,7 @@
                   <th>البريد الإلكتروني</th>
                   <th>المجموعات</th>
                   <th>الكيانات</th>
-                  <th>الصلاحيات</th>
+                  {% comment %} <th>الصلاحيات</th> {% endcomment %}
                   <!-- عمود جديد للصلاحيات -->
                   <th>إجراءات</th>
                 </tr>
@@ -62,18 +62,18 @@
                     >
                     {% endfor %}
                   </td>
-                  <td>
+                  {% comment %} <td>
                     <!-- عرض الصلاحيات -->
                     {% for permission in user.get_all_permissions %}
                     <span class="badge bg-info">{{ permission }}</span>
                     {% endfor %}
-                  </td>
+                  </td> {% endcomment %}
                   <td>
                     <a
                       href="{% url 'edit_user' user.id %}"
                       class="btn btn-outline-warning btn-md mb-1"
                     >
-                      <i class="fas fa-edit"></i> تعديل
+                      <i class="fa-regular fa-pen-to-square"></i>
                     </a>
                     <a
                       href="{% url 'toggle_user_status' user.id %}"
@@ -90,7 +90,7 @@
                       data-id="{{ user.id }}"
                       data-username="{{ user.username }}"
                     >
-                      <i class="fas fa-trash"></i> حذف
+                      <i class="fa-regular fa-trash-can"></i>
                     </button>
                     {% endif %}
                   </td>

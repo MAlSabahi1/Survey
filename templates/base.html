@@ -150,7 +150,10 @@
     <!-- محتوى الصفحة -->
     <div class="content" id="content">{% block content %}{% endblock %}</div>
 
-    {% block extra_js %}{% endblock %} {% if messages %}
+    {% block extra_js %}{% endblock %} 
+    
+    {% comment %} 
+    {% if messages %}
     <script type="text/javascript">
       // انتظر حتى يتم تحميل الصفحة
       window.onload = function () {
@@ -164,7 +167,7 @@
         });
       };
     </script>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {

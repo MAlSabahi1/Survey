@@ -16,6 +16,8 @@ from threading import local
 
 _user = local()
 
+#------------------------------ تابع سجل الاحداث التي يقوم بها المستخدم  ---------------------------
+
 class CurrentUserMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -29,6 +31,6 @@ class CurrentUserMiddleware:
 def get_current_user():
     return getattr(_user, 'value', None)
 
-
+# ----------------------------------------------------------------------------
 
 

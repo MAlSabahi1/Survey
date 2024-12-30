@@ -38,7 +38,7 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>المستخدم</th>
-                                    <th>النموذج</th>
+                                    <th>الجدول</th>
                                     <th>رقم الكائن</th>
                                     <th>الحدث</th>
                                     <th>الوصف</th>
@@ -64,6 +64,32 @@
         </div>
     </div>
 </div>
+    {% if messages %}
+    <script type="text/javascript">
+      // انتظر حتى يتم تحميل الصفحة
+      window.onload = function () {
+        // عرض الرسالة باستخدام SweetAlert2
+        Swal.fire({
+          icon: "warning",
+          title: "تم مسح جميع السجل ",
+          text: "{% for message in messages %}{{ message }}{% endfor %}",
+          showConfirmButton: false, // لا يظهر زر التأكيد
+          timer: 3000, // الرسالة ستختفي بعد 5 ثوانٍ
+        });
+      };
+    </script>
+    {% endif %}
+<style>
+    @media (max-width: 768px) {
+      .row {
+        flex-direction: column-reverse;
+        gap: 1.5rem;
+      }
+      .add-entity {
+        justify-content: center !important;
+      }
+    }
+  </style>
 <script>
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();

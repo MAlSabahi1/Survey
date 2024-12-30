@@ -4,7 +4,6 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
-
 from django_project import settings
 from .forms import *
 from django.http import HttpResponse, JsonResponse
@@ -16,15 +15,15 @@ from django.contrib.auth.views import LoginView
 from axes.models import AccessAttempt, AccessLog
 from django.utils.timezone import now
 from axes.handlers.proxy import AxesProxyHandler
-
 from user_agents import parse
-
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
 from .models import UserSession
-
-
 from .models import ActionLog
+from .models import LoginAttempt
+
+
+#------------------------------   سجل الاحداث   ------------------------------------
 
 @login_required
 def logs_events(request):
@@ -42,7 +41,7 @@ def delete_all_logs(request):
     # messages.success(request, "تم حذف جميع السجلات بنجاح.")
     return redirect('logs_events')
 
-
+#------------------------------   سجل جلسات المستخدمين   ------------------------------------
 @receiver(user_logged_in)
 def create_user_session(sender, request, user, **kwargs):
     # إنشاء جلسة جديدة عند تسجيل الدخول
@@ -79,6 +78,8 @@ def user_sessions(request):
         'browser': browser,
         'os': os
     })
+
+
 @login_required
 def delete_session(request, session_id):
     # الحصول على السجل بناءً على المعرف
@@ -95,24 +96,32 @@ def delete_all_sessions(request):
     if request.method == "POST":
         # حذف جميع سجلات الجلسات
         UserSession.objects.all().delete()
+        messages.success(request, "تم مسح جميع السجلات بنجاح.")
         return redirect('user_sessions')  # إعادة توجيه إلى صفحة سجلات الجلسات بعد الحذف
     return HttpResponse(status=405)  # في حال كانت الطريقة غير صحيحة
+# ------------------------------------------------------------------
 
+
+#------------------------------   سجل محاولات تسجيل الدخول   ------------------------------------
 def logs_view(request):
-    # استرجاع سجلات محاولات الدخول الفاشلة من django-axes
-    axes_logs = AccessAttempt.objects.all().order_by('-attempt_time')[:30]  # عرض آخر 30 محاولة
+    # استرجاع السجلات من جدول LoginAttempt
+    logs = LoginAttempt.objects.all().order_by('-attempt_time')[:30]  # عرض آخر 30 محاولة
 
-    # إضافة نوع المتصفح إلى كل سجل
-    for log in axes_logs:
-        user_agent = parse(log.user_agent)
-        log.browser = user_agent.browser.family  # نوع المتصفح (مثل Chrome, Firefox)
-        log.os = user_agent.os.family  # نوع نظام التشغيل (مثل Windows, Linux)
-    
     return render(request, 'registration/logs.html', {
-        'axes_logs': axes_logs,
+        'logs': logs,
     })
 
+def clear_logs(request):
+    # حذف جميع السجلات
+    LoginAttempt.objects.all().delete()
+    messages.success(request, "تم مسح جميع السجلات بنجاح.")
+    return redirect('logs')  # إعادة التوجيه إلى صفحة السجلات
 
+# ------------------------------------------------------------------
+
+
+
+#------------------------------   حظر محاولات تسجيل الدخول الخاطئة   ------------------------------------
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'  # مسار صفحة تسجيل الدخول الخاصة بك
 
@@ -123,7 +132,7 @@ class CustomLoginView(LoginView):
             return render(request, 'registration/login_locked.html')
         return super().dispatch(request, *args, **kwargs)
 
-
+#---------------------------------------------------------------------------
 
 class SignUpView(generic.CreateView):
     form_class = UserCreationForm

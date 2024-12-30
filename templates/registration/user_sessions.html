@@ -57,7 +57,7 @@
                                         <!-- زر الحذف -->
                                         <form action="{% url 'delete_session' session.id %}" method="POST" style="display:inline;">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-outline-danger btn-md"><i class="fas fa-trash"></i></button>
+                                            <button type="submit" class="btn btn-outline-danger btn-md"> <i class="fa-regular fa-trash-can"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -71,6 +71,21 @@
         </div>
     </div>
 </div>
+{% if messages %}
+<script type="text/javascript">
+  // انتظر حتى يتم تحميل الصفحة
+  window.onload = function () {
+    // عرض الرسالة باستخدام SweetAlert2
+    Swal.fire({
+      icon: "warning",
+      title: "تم مسح جميع السجل ",
+      text: "{% for message in messages %}{{ message }}{% endfor %}",
+      showConfirmButton: false, // لا يظهر زر التأكيد
+      timer: 3000, // الرسالة ستختفي بعد 5 ثوانٍ
+    });
+  };
+</script>
+{% endif %}
 <style>
     @media (max-width: 768px) {
       .row {

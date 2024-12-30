@@ -3,13 +3,17 @@ from django.contrib.sessions.models import Session
 from django.utils.timezone import now
 from django.dispatch import receiver
 from django.contrib import messages
-
 from django.db.models.signals import post_save, post_delete
 from django.contrib.contenttypes.models import ContentType
 from .models import ActionLog
 from django.contrib.auth.models import User, Group, Permission
 from survey.models import *  # إضافة النماذج المستهدفة فقط
+from axes.signals import user_login_failed
+from .models import LoginAttempt
+from user_agents import parse
 
+
+#------------------------------   منع دخول المستخدم بحساب واحد في اكثر من جلسه   ------------------------------------
 
 @receiver(user_logged_in)
 def prevent_multiple_logins(sender, request, user, **kwargs):
@@ -29,8 +33,9 @@ def prevent_multiple_logins(sender, request, user, **kwargs):
 
     # الجلسة الحالية (الجهاز الذي تم تسجيل الدخول منه) ستبقى نشطة فقط
     request.session.save()
+#--------------------------------------------------------------------------------------
 
-
+#---------------------------------   سجل الاحداث التي يقوم بها المستخدم   -------------
 @receiver(post_save)
 def log_save(sender, instance, created, **kwargs):
     # تحديد النماذج المستهدفة فقط
@@ -73,3 +78,37 @@ def log_delete(sender, instance, **kwargs):
         action="DELETE",
         description=description
     )
+
+#-------------------------------------------------------------------------------------
+
+
+#---------------------------------   محاولات تسجيل الدخول الخاطئ   -----------------------
+@receiver(user_login_failed)
+def log_failed_attempt(sender, credentials, request, **kwargs):
+    ip = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # تحليل نوع المتصفح
+    parsed_user_agent = parse(user_agent)
+    browser = parsed_user_agent.browser.family
+    os = parsed_user_agent.os.family
+
+    # البحث عن سجل موجود بنفس المستخدم وعنوان الـ IP
+    attempt, created = LoginAttempt.objects.get_or_create(
+        ip_address=ip,
+        username=credentials.get('username', None),
+        defaults={
+            'user_agent': user_agent,
+            'browser': browser,
+            'os': os,
+            'failures_since_start': 1,
+        }
+    )
+
+    # إذا كان السجل موجودًا، تحديث عدد المحاولات ووقت المحاولة
+    if not created:
+        attempt.failures_since_start += 1
+        attempt.attempt_time = now()
+        attempt.save()
+
+#---------------------------------------------------------------------------
